@@ -400,6 +400,7 @@
   .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--gold); color:var(--bg); padding:12px 22px; border-radius:8px; font-size:13px; font-weight:600; z-index:1100; transition:transform .3s ease; }
   .toast.show{ transform:translateX(-50%) translateY(0); }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -412,8 +413,31 @@
     <a href="#reviews">Reviews</a>
     <a href="https://fahad912-f.github.io" target="_blank">Portfolio</a>
     <a class="nav-cta" href="https://wa.me/923495325927" target="_blank">WhatsApp</a>
+    <a id="authNavBtn" class="nav-cta" style="cursor:pointer;">Login</a>
   </div>
 </nav>
+
+<!-- ============= AUTH MODAL ============= -->
+<div class="overlay" id="authOverlay">
+  <div class="drawer">
+    <button class="close-btn" id="closeAuth">✕</button>
+    <div class="drawer-handle"></div>
+    <div class="drawer-title" id="authTitle">Log In</div>
+    <p style="font-size:12.5px;color:var(--chalk-dim);margin-bottom:18px;">Log in or create an account to place orders.</p>
+
+    <input type="email" class="form-input" id="authEmail" placeholder="Email">
+    <input type="text" class="form-input" id="authPhone" placeholder="Phone number (for signup)" style="display:none;">
+    <input type="password" class="form-input" id="authPassword" placeholder="Password">
+
+    <button class="confirm-btn" id="authSubmitBtn">Log In</button>
+    <p id="authError" style="color:var(--sale, #e0453f);font-size:12px;margin-top:10px;display:none;"></p>
+
+    <p style="font-size:12.5px;color:var(--chalk-dim);text-align:center;margin-top:16px;">
+      <span id="authToggleText">Don't have an account?</span>
+      <a href="#" id="authToggleLink" style="color:var(--gold-bright);text-decoration:none;font-weight:600;">Sign Up</a>
+    </p>
+  </div>
+</div>
 
 <!-- ================= HERO ================= -->
 <div class="hero">
@@ -587,6 +611,95 @@ const CONTACT = {
 };
 
 const WEB3FORMS_KEY = "24021880-27fa-43cd-94cc-2b89c191103e";
+
+// ---- Supabase (backend: accounts + orders) ----
+const SUPABASE_URL = "https://jtjdrcggbhrbizlukcdz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Xa7kRv1HDV_xN5T1jElFxA_PwbXM-qd";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let authMode = 'login'; // 'login' or 'signup'
+let currentUser = null;
+
+const authOverlay = document.getElementById('authOverlay');
+const authNavBtn = document.getElementById('authNavBtn');
+const authTitle = document.getElementById('authTitle');
+const authEmail = document.getElementById('authEmail');
+const authPhone = document.getElementById('authPhone');
+const authPassword = document.getElementById('authPassword');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authError = document.getElementById('authError');
+const authToggleText = document.getElementById('authToggleText');
+const authToggleLink = document.getElementById('authToggleLink');
+
+function openAuthModal(){ authOverlay.classList.add('open'); authError.style.display = 'none'; }
+document.getElementById('closeAuth').addEventListener('click', () => authOverlay.classList.remove('open'));
+authOverlay.addEventListener('click', e => { if(e.target === authOverlay) authOverlay.classList.remove('open'); });
+
+authToggleLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  if(authMode === 'signup'){
+    authTitle.textContent = 'Sign Up';
+    authSubmitBtn.textContent = 'Sign Up';
+    authPhone.style.display = 'block';
+    authToggleText.textContent = 'Already have an account?';
+    authToggleLink.textContent = 'Log In';
+  } else {
+    authTitle.textContent = 'Log In';
+    authSubmitBtn.textContent = 'Log In';
+    authPhone.style.display = 'none';
+    authToggleText.textContent = "Don't have an account?";
+    authToggleLink.textContent = 'Sign Up';
+  }
+});
+
+authNavBtn.addEventListener('click', async () => {
+  if(currentUser){
+    await sb.auth.signOut();
+  } else {
+    openAuthModal();
+  }
+});
+
+authSubmitBtn.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value.trim();
+  const phone = authPhone.value.trim();
+  authError.style.display = 'none';
+  if(!email || !password){ authError.textContent = 'Please enter email and password.'; authError.style.display = 'block'; return; }
+
+  authSubmitBtn.disabled = true;
+  authSubmitBtn.textContent = 'Please wait...';
+
+  try {
+    if(authMode === 'signup'){
+      const { error } = await sb.auth.signUp({ email, password, options: { data: { phone } } });
+      if(error) throw error;
+      alert('Account created! You can now log in and place orders.');
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+    }
+    authOverlay.classList.remove('open');
+    authEmail.value = ''; authPassword.value = ''; authPhone.value = '';
+  } catch(err){
+    authError.textContent = err.message || 'Something went wrong.';
+    authError.style.display = 'block';
+  }
+  authSubmitBtn.disabled = false;
+  authSubmitBtn.textContent = authMode === 'signup' ? 'Sign Up' : 'Log In';
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  currentUser = session ? session.user : null;
+  authNavBtn.textContent = currentUser ? `👤 ${currentUser.email.split('@')[0]} (Logout)` : 'Login';
+});
+
+// Restore session on load
+sb.auth.getSession().then(({ data: { session } }) => {
+  currentUser = session ? session.user : null;
+  authNavBtn.textContent = currentUser ? `👤 ${currentUser.email.split('@')[0]} (Logout)` : 'Login';
+});
 
 // ---- PRODUCTS: type = 'product' | 'service' | 'notes' ----
 const PRODUCTS = [
@@ -871,6 +984,11 @@ let currentProduct = null;
 
 grid.addEventListener('click', e => {
   if(!e.target.classList.contains('buy-btn')) return;
+  if(!currentUser){
+    alert('Please log in or sign up first to place an order.');
+    openAuthModal();
+    return;
+  }
   const id = e.target.dataset.id;
   currentProduct = PRODUCTS.find(p => p.id === id);
   drawerTitle.textContent = currentProduct.title;
@@ -955,18 +1073,31 @@ function resetDrawerState(){
 }
 
 async function sendOrder(extra, fileInput){
-  // NOTE: Web3Forms free plan does not support file attachments — sending text-only.
-  // Screenshot goes to WhatsApp separately (see openWhatsAppWithScreenshot below).
-  const formData = new FormData();
-  formData.append("access_key", WEB3FORMS_KEY);
-  formData.append("subject", `New Order: ${currentProduct.title}`);
-  formData.append("product", currentProduct.title);
-  formData.append("price", `PKR ${currentProduct.pkr} / $${currentProduct.usd}`);
-  formData.append("note", "Payment screenshot sent separately via WhatsApp");
-  Object.entries(extra).forEach(([k,v]) => formData.append(k, v));
+  // Save order in Supabase (your database/admin panel source of truth)
+  const { error } = await sb.from('orders').insert({
+    user_id: currentUser.id,
+    customer_email: currentUser.email,
+    product_title: currentProduct.title,
+    price: `PKR ${currentProduct.pkr} / $${currentProduct.usd}`,
+    payment_method: extra.payment_method || 'N/A',
+    status: 'pending'
+  });
+  if(error){ console.error(error); return false; }
 
-  const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
-  return (await res.json()).success;
+  // Also send a Web3Forms email notification (text-only, screenshot goes via WhatsApp)
+  try {
+    const formData = new FormData();
+    formData.append("access_key", WEB3FORMS_KEY);
+    formData.append("subject", `New Order: ${currentProduct.title}`);
+    formData.append("product", currentProduct.title);
+    formData.append("customer_email", currentUser.email);
+    formData.append("price", `PKR ${currentProduct.pkr} / $${currentProduct.usd}`);
+    formData.append("note", "Payment screenshot sent separately via WhatsApp. Full order saved in Supabase — approve it from admin.html.");
+    Object.entries(extra).forEach(([k,v]) => formData.append(k, v));
+    await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
+  } catch(e){ /* non-critical, order already saved in Supabase */ }
+
+  return true;
 }
 
 function openWhatsAppWithScreenshot(){
