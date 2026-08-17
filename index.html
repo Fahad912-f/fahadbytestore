@@ -983,38 +983,35 @@ function getShippingInfo(){
 }
 
 confirmBtn.addEventListener('click', async () => {
+  // Open WhatsApp immediately (synchronously, on click) so mobile browsers don't block the popup
+  openWhatsAppWithScreenshot();
+
   confirmBtn.disabled = true;
   confirmBtn.textContent = "Sending...";
   try {
     const extra = { payment_method: "Local (JazzCash/NayaPay)" };
     if(currentProduct.type === 'physical') Object.assign(extra, getShippingInfo());
     const ok = await sendOrder(extra);
-    if (ok) {
-      overlay.classList.remove('open');
-      showToast();
-      openWhatsAppWithScreenshot();
-    }
-    else alert("Something went wrong. Please confirm directly via WhatsApp instead.");
+    if (ok) { overlay.classList.remove('open'); showToast(); }
+    else alert("Order email failed to send, but your WhatsApp should be open — please send your screenshot there.");
   } catch (err) {
-    alert("Network error. Please WhatsApp your screenshot: wa.me/923495325927");
+    alert("Network error sending order email. Please send your screenshot via WhatsApp.");
   }
   confirmBtn.textContent = "Confirm Order";
   confirmBtn.disabled = false;
 });
 
 confirmIntl.addEventListener('click', async () => {
+  openWhatsAppWithScreenshot();
+
   confirmIntl.disabled = true;
   confirmIntl.textContent = "Sending...";
   try {
     const ok = await sendOrder({ payment_method: "International (Payoneer)" });
-    if (ok) {
-      overlay.classList.remove('open');
-      showToast();
-      openWhatsAppWithScreenshot();
-    }
-    else alert("Something went wrong. Please email your receipt instead: ff9224386@gmail.com");
+    if (ok) { overlay.classList.remove('open'); showToast(); }
+    else alert("Order email failed to send, but your WhatsApp should be open — please send your screenshot there.");
   } catch (err) {
-    alert("Network error. Please email your receipt: ff9224386@gmail.com");
+    alert("Network error sending order email. Please send your screenshot via WhatsApp.");
   }
   confirmIntl.textContent = "Confirm Order";
   confirmIntl.disabled = false;
