@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FahadByte — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090c; --panel:#0f1216; --panel-2:#141821;
+    --line:#22262f; --chalk:#eceae4; --chalk-dim:#8a8f99;
+    --gold:#c9a227; --gold-bright:#e0b93a;
+    --mono:'JetBrains Mono', monospace; --display:'Space Grotesk', sans-serif; --body:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ background:var(--bg); color:var(--chalk); font-family:var(--body); }
+  .wrap{ max-width:700px; margin:0 auto; padding:24px 18px 60px; }
+  .logo{ font-family:var(--display); font-weight:700; font-size:19px; margin-bottom:24px; }
+  .logo span{ color:var(--gold); }
+
+  .login-box{ max-width:360px; margin:80px auto; padding:28px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  .login-box h2{ font-family:var(--display); font-size:18px; margin-bottom:16px; }
+  .form-input{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:11px 14px; color:var(--chalk); font-size:13px; margin-bottom:12px; }
+  .btn{ width:100%; padding:12px; background:var(--gold); color:var(--bg); border:none; border-radius:7px; font-weight:700; font-size:14px; cursor:pointer; }
+  .btn:disabled{ opacity:.4; }
+  .error{ color:#e0453f; font-size:12px; margin-top:8px; display:none; }
+
+  .top-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .logout-btn{ font-family:var(--mono); font-size:12px; color:var(--chalk-dim); background:none; border:1px solid var(--line); padding:7px 14px; border-radius:6px; cursor:pointer; }
+
+  .stat-row{ display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+  .stat{ flex:1; min-width:100px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .stat-num{ font-family:var(--display); font-size:24px; font-weight:700; color:var(--gold-bright); }
+  .stat-label{ font-size:11px; color:var(--chalk-dim); font-family:var(--mono); }
+
+  .filter-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .filter-btn{ font-family:var(--mono); font-size:11.5px; padding:8px 14px; border:1px solid var(--line); background:transparent; color:var(--chalk-dim); border-radius:18px; cursor:pointer; }
+  .filter-btn.active{ border-color:var(--gold); color:var(--gold-bright); }
+
+  .order-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
+  .order-top{ display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; gap:10px; }
+  .order-product{ font-weight:600; font-size:14px; }
+  .order-status{ font-family:var(--mono); font-size:10px; padding:3px 9px; border-radius:12px; white-space:nowrap; }
+  .status-pending{ background:#3a2f0a; color:var(--gold-bright); }
+  .status-approved{ background:#0f3a1f; color:#4ade80; }
+  .order-meta{ font-size:12px; color:var(--chalk-dim); margin-bottom:3px; }
+  .order-actions{ display:flex; gap:8px; margin-top:12px; }
+  .action-btn{ flex:1; padding:9px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; }
+  .approve-btn{ background:var(--gold); color:var(--bg); }
+  .email-btn{ background:var(--panel-2); color:var(--chalk); border:1px solid var(--line) !important; }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--chalk-dim); font-size:13px; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-box">
+  <h2>FahadByte Admin</h2>
+  <input type="email" class="form-input" id="loginEmail" placeholder="Admin email">
+  <input type="password" class="form-input" id="loginPassword" placeholder="Password">
+  <button class="btn" id="loginBtn">Log In</button>
+  <p class="error" id="loginError"></p>
+</div>
+
+<div id="adminScreen" class="wrap" style="display:none;">
+  <div class="top-bar">
+    <div class="logo">Fahad<span>Byte</span> · Admin</div>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">TOTAL ORDERS</div></div>
+    <div class="stat"><div class="stat-num" id="statPending">0</div><div class="stat-label">PENDING</div></div>
+    <div class="stat"><div class="stat-num" id="statApproved">0</div><div class="stat-label">APPROVED</div></div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="approved">Approved</button>
+  </div>
+
+  <div id="ordersList"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://jtjdrcggbhrbizlukcdz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Xa7kRv1HDV_xN5T1jElFxA_PwbXM-qd";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const ADMIN_EMAIL = "ff9224386@gmail.com";
+
+const loginScreen = document.getElementById('loginScreen');
+const adminScreen = document.getElementById('adminScreen');
+const loginError = document.getElementById('loginError');
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  loginError.style.display = 'none';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ loginError.textContent = error.message; loginError.style.display = 'block'; return; }
+  if(data.user.email !== ADMIN_EMAIL){
+    loginError.textContent = "This account doesn't have admin access.";
+    loginError.style.display = 'block';
+    await sb.auth.signOut();
+    return;
+  }
+  showAdmin();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  location.reload();
+});
+
+async function checkSession(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user.email === ADMIN_EMAIL){
+    showAdmin();
+  }
+}
+checkSession();
+
+let allOrders = [];
+let currentFilter = 'all';
+
+function showAdmin(){
+  loginScreen.style.display = 'none';
+  adminScreen.style.display = 'block';
+  loadOrders();
+}
+
+async function loadOrders(){
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+  if(error){ console.error(error); return; }
+  allOrders = data;
+  renderStats();
+  renderOrders();
+}
+
+function renderStats(){
+  document.getElementById('statTotal').textContent = allOrders.length;
+  document.getElementById('statPending').textContent = allOrders.filter(o => o.status === 'pending').length;
+  document.getElementById('statApproved').textContent = allOrders.filter(o => o.status === 'approved').length;
+}
+
+function renderOrders(){
+  const list = document.getElementById('ordersList');
+  const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
+
+  if(filtered.length === 0){
+    list.innerHTML = `<div class="empty-state">No orders here yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(o => `
+    <div class="order-card">
+      <div class="order-top">
+        <div class="order-product">${o.product_title}</div>
+        <span class="order-status status-${o.status}">${o.status.toUpperCase()}</span>
+      </div>
+      <div class="order-meta">📧 ${o.customer_email || 'N/A'}</div>
+      <div class="order-meta">💰 ${o.price}</div>
+      <div class="order-meta">💳 ${o.payment_method}</div>
+      <div class="order-meta">🕐 ${new Date(o.created_at).toLocaleString()}</div>
+      <div class="order-actions">
+        ${o.status === 'pending' ? `<button class="action-btn approve-btn" onclick="approveOrder('${o.id}')">✓ Approve</button>` : ''}
+        <button class="action-btn email-btn" onclick="emailCustomer('${o.customer_email}', '${o.product_title.replace(/'/g,"\\'")}')">✉ Email File</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveOrder(id){
+  const { error } = await sb.from('orders').update({ status: 'approved' }).eq('id', id);
+  if(error){ alert('Failed to approve: ' + error.message); return; }
+  loadOrders();
+}
+
+function emailCustomer(email, product){
+  const subject = encodeURIComponent(`Your FahadByte order — ${product}`);
+  const body = encodeURIComponent(`Hi,\n\nThank you for your order! Here is your file/link for "${product}":\n\n[Paste your Google Drive / WeTransfer link here]\n\nLet me know if you have any questions.\n\n— Fahad, FahadByte`);
+  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderOrders();
+  });
+});
+</script>
+
+</body>
+</html>
