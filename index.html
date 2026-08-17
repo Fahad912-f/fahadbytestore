@@ -955,17 +955,23 @@ function resetDrawerState(){
 }
 
 async function sendOrder(extra, fileInput){
+  // NOTE: Web3Forms free plan does not support file attachments — sending text-only.
+  // Screenshot goes to WhatsApp separately (see openWhatsAppWithScreenshot below).
   const formData = new FormData();
   formData.append("access_key", WEB3FORMS_KEY);
   formData.append("subject", `New Order: ${currentProduct.title}`);
   formData.append("product", currentProduct.title);
   formData.append("price", `PKR ${currentProduct.pkr} / $${currentProduct.usd}`);
+  formData.append("note", "Payment screenshot sent separately via WhatsApp");
   Object.entries(extra).forEach(([k,v]) => formData.append(k, v));
-  const file = fileInput || screenshotInput;
-  if (file.files[0]) formData.append("attachment", file.files[0]);
 
   const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
   return (await res.json()).success;
+}
+
+function openWhatsAppWithScreenshot(){
+  const msg = encodeURIComponent(`Order confirmed on FahadByte: ${currentProduct.title} (PKR ${currentProduct.pkr}). Sending my payment screenshot below 👇`);
+  window.open(`https://wa.me/923495325927?text=${msg}`, '_blank');
 }
 
 function getShippingInfo(){
@@ -983,7 +989,11 @@ confirmBtn.addEventListener('click', async () => {
     const extra = { payment_method: "Local (JazzCash/NayaPay)" };
     if(currentProduct.type === 'physical') Object.assign(extra, getShippingInfo());
     const ok = await sendOrder(extra);
-    if (ok) { overlay.classList.remove('open'); showToast(); }
+    if (ok) {
+      overlay.classList.remove('open');
+      showToast();
+      openWhatsAppWithScreenshot();
+    }
     else alert("Something went wrong. Please confirm directly via WhatsApp instead.");
   } catch (err) {
     alert("Network error. Please WhatsApp your screenshot: wa.me/923495325927");
@@ -996,8 +1006,12 @@ confirmIntl.addEventListener('click', async () => {
   confirmIntl.disabled = true;
   confirmIntl.textContent = "Sending...";
   try {
-    const ok = await sendOrder({ payment_method: "International (Payoneer)" }, screenshotInputIntl);
-    if (ok) { overlay.classList.remove('open'); showToast(); }
+    const ok = await sendOrder({ payment_method: "International (Payoneer)" });
+    if (ok) {
+      overlay.classList.remove('open');
+      showToast();
+      openWhatsAppWithScreenshot();
+    }
     else alert("Something went wrong. Please email your receipt instead: ff9224386@gmail.com");
   } catch (err) {
     alert("Network error. Please email your receipt: ff9224386@gmail.com");
