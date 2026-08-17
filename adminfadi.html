@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FahadByte — Admin</title>
+<title>FahadByte — Universal Admin Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,42 +16,34 @@
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{ background:var(--bg); color:var(--chalk); font-family:var(--body); }
-  .wrap{ max-width:700px; margin:0 auto; padding:24px 18px 60px; }
+  .wrap{ max-width:900px; margin:0 auto; padding:24px 18px 60px; }
   .logo{ font-family:var(--display); font-weight:700; font-size:19px; margin-bottom:24px; }
   .logo span{ color:var(--gold); }
 
   .login-box{ max-width:360px; margin:80px auto; padding:28px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
   .login-box h2{ font-family:var(--display); font-size:18px; margin-bottom:16px; }
-  .form-input{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:11px 14px; color:var(--chalk); font-size:13px; margin-bottom:12px; }
-  .btn{ width:100%; padding:12px; background:var(--gold); color:var(--bg); border:none; border-radius:7px; font-weight:700; font-size:14px; cursor:pointer; }
-  .btn:disabled{ opacity:.4; }
+  .form-input, select, textarea{ width:100%; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:10px 12px; color:var(--chalk); font-size:13px; margin-bottom:10px; font-family:var(--body); }
+  .btn{ width:100%; padding:11px; background:var(--gold); color:var(--bg); border:none; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer; }
   .error{ color:#e0453f; font-size:12px; margin-top:8px; display:none; }
 
   .top-bar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
-  .logout-btn{ font-family:var(--mono); font-size:12px; color:var(--chalk-dim); background:none; border:1px solid var(--line); padding:7px 14px; border-radius:6px; cursor:pointer; }
+  .nav-tabs{ display:flex; gap:10px; margin-bottom:20px; }
+  .tab-btn{ background:var(--panel); border:1px solid var(--line); color:var(--chalk-dim); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; }
+  .tab-btn.active{ border-color:var(--gold); color:var(--gold-bright); }
 
-  .stat-row{ display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
-  .stat{ flex:1; min-width:100px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
-  .stat-num{ font-family:var(--display); font-size:24px; font-weight:700; color:var(--gold-bright); }
-  .stat-label{ font-size:11px; color:var(--chalk-dim); font-family:var(--mono); }
+  .stat-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:24px; }
+  .stat{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .stat-num{ font-family:var(--display); font-size:17px; font-weight:700; color:var(--gold-bright); }
+  .stat-label{ font-size:10px; color:var(--chalk-dim); font-family:var(--mono); margin-top:4px; }
 
-  .filter-row{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
-  .filter-btn{ font-family:var(--mono); font-size:11.5px; padding:8px 14px; border:1px solid var(--line); background:transparent; color:var(--chalk-dim); border-radius:18px; cursor:pointer; }
-  .filter-btn.active{ border-color:var(--gold); color:var(--gold-bright); }
-
-  .order-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
-  .order-top{ display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; gap:10px; }
-  .order-product{ font-weight:600; font-size:14px; }
-  .order-status{ font-family:var(--mono); font-size:10px; padding:3px 9px; border-radius:12px; white-space:nowrap; }
-  .status-pending{ background:#3a2f0a; color:var(--gold-bright); }
-  .status-approved{ background:#0f3a1f; color:#4ade80; }
-  .order-meta{ font-size:12px; color:var(--chalk-dim); margin-bottom:3px; }
-  .order-actions{ display:flex; gap:8px; margin-top:12px; }
-  .action-btn{ flex:1; padding:9px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
+  .card-top{ display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; }
+  .order-id{ font-family:var(--mono); font-size:11px; color:var(--gold); }
+  .action-btn{ padding:7px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; }
   .approve-btn{ background:var(--gold); color:var(--bg); }
-  .email-btn{ background:var(--panel-2); color:var(--chalk); border:1px solid var(--line) !important; }
+  .delete-btn{ background:#3a0f0f; color:#f87171; border:1px solid #5c1d1d; }
 
-  .empty-state{ text-align:center; padding:60px 20px; color:var(--chalk-dim); font-size:13px; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 </style>
 </head>
 <body>
@@ -66,30 +58,62 @@
 
 <div id="adminScreen" class="wrap" style="display:none;">
   <div class="top-bar">
-    <div class="logo">Fahad<span>Byte</span> · Admin</div>
-    <button class="logout-btn" id="logoutBtn">Logout</button>
+    <div class="logo">Fahad<span>Byte</span> · Control Center</div>
+    <button class="action-btn delete-btn" id="logoutBtn">Logout</button>
   </div>
 
-  <div class="stat-row">
-    <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">TOTAL ORDERS</div></div>
-    <div class="stat"><div class="stat-num" id="statPending">0</div><div class="stat-label">PENDING</div></div>
-    <div class="stat"><div class="stat-num" id="statApproved">0</div><div class="stat-label">APPROVED</div></div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('orders')">📦 Orders & Sales</button>
+    <button class="tab-btn" onclick="switchTab('products')">⚙ Manage Front-End Services</button>
   </div>
 
-  <div class="filter-row">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="pending">Pending</button>
-    <button class="filter-btn" data-filter="approved">Approved</button>
+  <!-- ORDERS SECTION -->
+  <div id="ordersSection">
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">TOTAL ORDERS</div></div>
+      <div class="stat"><div class="stat-num" id="statPending">0</div><div class="stat-label">PENDING</div></div>
+      <div class="stat"><div class="stat-num" id="statMonthlyPkr">PKR 0</div><div class="stat-label">MONTHLY (PKR)</div></div>
+      <div class="stat"><div class="stat-num" id="statMonthlyUsd">$0</div><div class="stat-label">MONTHLY (USD)</div></div>
+    </div>
+    <div id="ordersList"></div>
   </div>
 
-  <div id="ordersList"></div>
+  <!-- PRODUCTS MANAGER SECTION -->
+  <div id="productsSection" style="display:none;">
+    <div class="card">
+      <h3 style="font-family:var(--display); margin-bottom:12px; color:var(--gold);">Add / Edit Front-End Service</h3>
+      <input type="text" id="pTitle" class="form-input" placeholder="Service Title (e.g. CapCut Pro Lifetime)">
+      <textarea id="pDesc" class="form-input" placeholder="Short Description..."></textarea>
+      
+      <div class="grid-2">
+        <select id="pCategory">
+          <option value="digital_app">📱 Digital App / License</option>
+          <option value="cv_builder">📝 Interactive CV Service</option>
+          <option value="manual_service">💼 Manual Custom Service</option>
+        </select>
+        <input type="number" id="pDiscount" class="form-input" placeholder="Discount % (e.g. 20)">
+      </div>
+
+      <div class="grid-2">
+        <input type="number" id="pPricePkr" class="form-input" placeholder="Price in PKR (e.g. 1500)">
+        <input type="number" id="pPriceUsd" class="form-input" placeholder="Price in USD (e.g. 5)">
+      </div>
+
+      <button class="btn" onclick="saveProduct()">+ Publish Service to Website</button>
+    </div>
+
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Active Front-End Services</h3>
+    <div id="productsList"></div>
+  </div>
 </div>
 
 <script>
 const SUPABASE_URL = "https://jtjdrcggbhrbizlukcdz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Xa7kRv1HDV_xN5T1jElFxA_PwbXM-qd";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const ADMIN_EMAIL = "ff9224386@gmail.com";
+const RESEND_API_KEY = "Re_DFJy6Pau_7615fBtkryap1qrMvaSpAEdk";
 
 const loginScreen = document.getElementById('loginScreen');
 const adminScreen = document.getElementById('adminScreen');
@@ -102,98 +126,154 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ loginError.textContent = error.message; loginError.style.display = 'block'; return; }
   if(data.user.email !== ADMIN_EMAIL){
-    loginError.textContent = "This account doesn't have admin access.";
-    loginError.style.display = 'block';
-    await sb.auth.signOut();
-    return;
+    loginError.textContent = "Access denied."; loginError.style.display = 'block';
+    await sb.auth.signOut(); return;
   }
   showAdmin();
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await sb.auth.signOut();
-  location.reload();
+  await sb.auth.signOut(); location.reload();
 });
 
 async function checkSession(){
   const { data: { session } } = await sb.auth.getSession();
-  if(session && session.user.email === ADMIN_EMAIL){
-    showAdmin();
-  }
+  if(session && session.user.email === ADMIN_EMAIL){ showAdmin(); }
 }
 checkSession();
-
-let allOrders = [];
-let currentFilter = 'all';
 
 function showAdmin(){
   loginScreen.style.display = 'none';
   adminScreen.style.display = 'block';
   loadOrders();
+  loadProducts();
 }
 
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if(tab === 'orders'){
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+    document.getElementById('ordersSection').style.display = 'block';
+    document.getElementById('productsSection').style.display = 'none';
+  } else {
+    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+    document.getElementById('ordersSection').style.display = 'none';
+    document.getElementById('productsSection').style.display = 'block';
+  }
+}
+
+// ORDERS MANAGEMENT
+let allOrders = [];
 async function loadOrders(){
-  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  if(error){ console.error(error); return; }
-  allOrders = data;
-  renderStats();
+  const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+  allOrders = data || [];
   renderOrders();
-}
-
-function renderStats(){
-  document.getElementById('statTotal').textContent = allOrders.length;
-  document.getElementById('statPending').textContent = allOrders.filter(o => o.status === 'pending').length;
-  document.getElementById('statApproved').textContent = allOrders.filter(o => o.status === 'approved').length;
 }
 
 function renderOrders(){
   const list = document.getElementById('ordersList');
-  const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
+  let totalPkr = 0, totalUsd = 0, pending = 0;
 
-  if(filtered.length === 0){
-    list.innerHTML = `<div class="empty-state">No orders here yet.</div>`;
-    return;
+  allOrders.forEach(o => {
+    if(o.status === 'pending') pending++;
+    if(o.status === 'approved' && o.price){
+      const pkr = o.price.match(/PKR\s*([\d,]+)/i);
+      const usd = o.price.match(/\$\s*([\d,.]+)/);
+      if(pkr) totalPkr += parseInt(pkr[1].replace(/,/g,''));
+      if(usd) totalUsd += parseFloat(usd[1].replace(/,/g,''));
+    }
+  });
+
+  document.getElementById('statTotal').textContent = allOrders.length;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statMonthlyPkr').textContent = `PKR ${totalPkr.toLocaleString()}`;
+  document.getElementById('statMonthlyUsd').textContent = `$${totalUsd.toLocaleString()}`;
+
+  list.innerHTML = allOrders.map(o => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <span class="order-id">#${o.id.slice(0,8)}</span>
+          <h4 style="margin-top:2px;">${o.product_title}</h4>
+        </div>
+        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:${o.status==='approved'?'#0f3a1f':'#3a2f0a'}; color:${o.status==='approved'?'#4ade80':'#e0b93a'};">${o.status.toUpperCase()}</span>
+      </div>
+      <div style="font-size:12px; color:var(--chalk-dim);">📧 ${o.customer_email || 'N/A'} | 💰 ${o.price} | 💳 ${o.payment_method}</div>
+      ${o.status === 'pending' ? `<button class="action-btn approve-btn" style="margin-top:10px; width:100%;" onclick="approveOrder('${o.id}', '${o.customer_email}', '${o.product_title.replace(/'/g,"\\'")}', '${o.product_id}')">✓ Approve Order & Send Email</button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function approveOrder(id, email, title, productId){
+  await sb.from('orders').update({ status: 'approved' }).eq('id', id);
+
+  // Auto-increment Sold Count in database
+  if(productId && productId !== 'null'){
+    const { data: p } = await sb.from('products').select('sold_count').eq('id', productId).single();
+    if(p){ await sb.from('products').update({ sold_count: (p.sold_count || 0) + 1 }).eq('id', productId); }
   }
 
-  list.innerHTML = filtered.map(o => `
-    <div class="order-card">
-      <div class="order-top">
-        <div class="order-product">${o.product_title}</div>
-        <span class="order-status status-${o.status}">${o.status.toUpperCase()}</span>
+  // Auto Email
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: "FahadByte <onboarding@resend.dev>",
+        to: [email],
+        subject: `Order Approved — ${title}`,
+        html: `<p>Hi,</p><p>Your order for <strong>${title}</strong> is approved!</p>`
+      })
+    });
+    alert('Order approved, email sent & sold count updated!');
+  } catch(e){ alert('Order approved!'); }
+  loadOrders();
+  loadProducts();
+}
+
+// PRODUCTS MANAGER
+async function loadProducts(){
+  const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+  const list = document.getElementById('productsList');
+  list.innerHTML = (data || []).map(p => `
+    <div class="card">
+      <div class="card-top">
+        <h4>${p.title} <span style="font-size:11px; color:var(--gold);">[${p.category}]</span></h4>
+        <button class="action-btn delete-btn" onclick="deleteProduct('${p.id}')">Delete</button>
       </div>
-      <div class="order-meta">📧 ${o.customer_email || 'N/A'}</div>
-      <div class="order-meta">💰 ${o.price}</div>
-      <div class="order-meta">💳 ${o.payment_method}</div>
-      <div class="order-meta">🕐 ${new Date(o.created_at).toLocaleString()}</div>
-      <div class="order-actions">
-        ${o.status === 'pending' ? `<button class="action-btn approve-btn" onclick="approveOrder('${o.id}')">✓ Approve</button>` : ''}
-        <button class="action-btn email-btn" onclick="emailCustomer('${o.customer_email}', '${o.product_title.replace(/'/g,"\\'")}')">✉ Email File</button>
+      <div style="font-size:12px; color:var(--chalk-dim); margin-bottom:6px;">${p.description || ''}</div>
+      <div style="font-size:12px; color:var(--gold-bright);">
+        PKR ${p.price_pkr} / $${p.price_usd} 
+        ${p.discount_percent > 0 ? `<span style="color:#4ade80;">(${p.discount_percent}% OFF)</span>` : ''} 
+        | 🔥 Sold: ${p.sold_count || 0}
       </div>
     </div>
   `).join('');
 }
 
-async function approveOrder(id){
-  const { error } = await sb.from('orders').update({ status: 'approved' }).eq('id', id);
-  if(error){ alert('Failed to approve: ' + error.message); return; }
-  loadOrders();
+async function saveProduct(){
+  const title = document.getElementById('pTitle').value.trim();
+  const description = document.getElementById('pDesc').value.trim();
+  const category = document.getElementById('pCategory').value;
+  const price_pkr = parseInt(document.getElementById('pPricePkr').value) || 0;
+  const price_usd = parseInt(document.getElementById('pPriceUsd').value) || 0;
+  const discount_percent = parseInt(document.getElementById('pDiscount').value) || 0;
+
+  if(!title){ alert('Title required'); return; }
+
+  await sb.from('products').insert([{ title, description, category, price_pkr, price_usd, discount_percent }]);
+  alert('Service Published to Website!');
+  document.getElementById('pTitle').value = '';
+  document.getElementById('pDesc').value = '';
+  loadProducts();
 }
 
-function emailCustomer(email, product){
-  const subject = encodeURIComponent(`Your FahadByte order — ${product}`);
-  const body = encodeURIComponent(`Hi,\n\nThank you for your order! Here is your file/link for "${product}":\n\n[Paste your Google Drive / WeTransfer link here]\n\nLet me know if you have any questions.\n\n— Fahad, FahadByte`);
-  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+async function deleteProduct(id){
+  if(confirm('Remove this service from website?')){
+    await sb.from('products').delete().eq('id', id);
+    loadProducts();
+  }
 }
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    renderOrders();
-  });
-});
 </script>
-
 </body>
 </html>
