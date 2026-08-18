@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FahadByte — Universal Admin Panel</title>
+<title>FahadByte — Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
   .stat-label{ font-size:10px; color:var(--chalk-dim); font-family:var(--mono); margin-top:4px; }
 
   .card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
-  .card-top{ display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; }
+  .card-top{ display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; gap:10px; }
   .order-id{ font-family:var(--mono); font-size:11px; color:var(--gold); }
   .action-btn{ padding:7px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; }
   .approve-btn{ background:var(--gold); color:var(--bg); }
@@ -63,8 +63,8 @@
   </div>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('orders')">📦 Orders & Sales</button>
-    <button class="tab-btn" onclick="switchTab('products')">⚙ Manage Front-End Services</button>
+    <button class="tab-btn active" onclick="switchTab('orders')">📦 Orders &amp; Sales</button>
+    <button class="tab-btn" onclick="switchTab('products')">⚙ Manage Services</button>
   </div>
 
   <!-- ORDERS SECTION -->
@@ -72,8 +72,9 @@
     <div class="stat-grid">
       <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">TOTAL ORDERS</div></div>
       <div class="stat"><div class="stat-num" id="statPending">0</div><div class="stat-label">PENDING</div></div>
-      <div class="stat"><div class="stat-num" id="statMonthlyPkr">PKR 0</div><div class="stat-label">MONTHLY (PKR)</div></div>
-      <div class="stat"><div class="stat-num" id="statMonthlyUsd">$0</div><div class="stat-label">MONTHLY (USD)</div></div>
+      <div class="stat"><div class="stat-num" id="statMonthlyPkr">PKR 0</div><div class="stat-label">THIS MONTH (PKR)</div></div>
+      <div class="stat"><div class="stat-num" id="statMonthlyUsd">$0</div><div class="stat-label">THIS MONTH (USD)</div></div>
+      <div class="stat"><div class="stat-num" id="statAllTimePkr">PKR 0</div><div class="stat-label">ALL-TIME (PKR)</div></div>
     </div>
     <div id="ordersList"></div>
   </div>
@@ -81,28 +82,25 @@
   <!-- PRODUCTS MANAGER SECTION -->
   <div id="productsSection" style="display:none;">
     <div class="card">
-      <h3 style="font-family:var(--display); margin-bottom:12px; color:var(--gold);">Add / Edit Front-End Service</h3>
-      <input type="text" id="pTitle" class="form-input" placeholder="Service Title (e.g. CapCut Pro Lifetime)">
+      <h3 style="font-family:var(--display); margin-bottom:12px; color:var(--gold);">Add New Service</h3>
+      <input type="text" id="pTitle" class="form-input" placeholder="Service Title">
       <textarea id="pDesc" class="form-input" placeholder="Short Description..."></textarea>
-      
       <div class="grid-2">
         <select id="pCategory">
           <option value="digital_app">📱 Digital App / License</option>
-          <option value="cv_builder">📝 Interactive CV Service</option>
-          <option value="manual_service">💼 Manual Custom Service</option>
+          <option value="cv_builder">📝 CV Service</option>
+          <option value="manual_service">💼 Custom Development</option>
         </select>
         <input type="number" id="pDiscount" class="form-input" placeholder="Discount % (e.g. 20)">
       </div>
-
       <div class="grid-2">
-        <input type="number" id="pPricePkr" class="form-input" placeholder="Price in PKR (e.g. 1500)">
-        <input type="number" id="pPriceUsd" class="form-input" placeholder="Price in USD (e.g. 5)">
+        <input type="number" id="pPricePkr" class="form-input" placeholder="Price in PKR">
+        <input type="number" id="pPriceUsd" class="form-input" placeholder="Price in USD">
       </div>
-
       <button class="btn" onclick="saveProduct()">+ Publish Service to Website</button>
     </div>
 
-    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Active Front-End Services</h3>
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Active Services</h3>
     <div id="productsList"></div>
   </div>
 </div>
@@ -111,9 +109,9 @@
 const SUPABASE_URL = "https://jtjdrcggbhrbizlukcdz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Xa7kRv1HDV_xN5T1jElFxA_PwbXM-qd";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const ADMIN_EMAIL = "ff9224386@gmail.com";
-const RESEND_API_KEY = "Re_DFJy6Pau_7615fBtkryap1qrMvaSpAEdk";
+// NOTE: no API keys for email here — sending is handled by a Supabase Edge Function
+// (send-order-email) which keeps the Resend key private on the server side.
 
 const loginScreen = document.getElementById('loginScreen');
 const adminScreen = document.getElementById('adminScreen');
@@ -145,8 +143,7 @@ checkSession();
 function showAdmin(){
   loginScreen.style.display = 'none';
   adminScreen.style.display = 'block';
-  loadOrders();
-  loadProducts();
+  loadProducts().then(loadOrders);
 }
 
 function switchTab(tab){
@@ -162,8 +159,10 @@ function switchTab(tab){
   }
 }
 
-// ORDERS MANAGEMENT
+// ============ ORDERS ============
 let allOrders = [];
+let productsMap = {};
+
 async function loadOrders(){
   const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
   allOrders = data || [];
@@ -172,22 +171,32 @@ async function loadOrders(){
 
 function renderOrders(){
   const list = document.getElementById('ordersList');
-  let totalPkr = 0, totalUsd = 0, pending = 0;
+  let monthlyPkr = 0, monthlyUsd = 0, allTimePkr = 0, pending = 0;
+
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
 
   allOrders.forEach(o => {
     if(o.status === 'pending') pending++;
-    if(o.status === 'approved' && o.price){
-      const pkr = o.price.match(/PKR\s*([\d,]+)/i);
-      const usd = o.price.match(/\$\s*([\d,.]+)/);
-      if(pkr) totalPkr += parseInt(pkr[1].replace(/,/g,''));
-      if(usd) totalUsd += parseFloat(usd[1].replace(/,/g,''));
+    if(o.status === 'approved'){
+      const price = Number(o.price) || 0;
+      allTimePkr += price;
+
+      const orderDate = new Date(o.created_at);
+      if(orderDate.getMonth() === thisMonth && orderDate.getFullYear() === thisYear){
+        monthlyPkr += price;
+        const prod = productsMap[o.product_id];
+        if(prod) monthlyUsd += Number(prod.price_usd) || 0;
+      }
     }
   });
 
   document.getElementById('statTotal').textContent = allOrders.length;
   document.getElementById('statPending').textContent = pending;
-  document.getElementById('statMonthlyPkr').textContent = `PKR ${totalPkr.toLocaleString()}`;
-  document.getElementById('statMonthlyUsd').textContent = `$${totalUsd.toLocaleString()}`;
+  document.getElementById('statMonthlyPkr').textContent = `PKR ${monthlyPkr.toLocaleString()}`;
+  document.getElementById('statMonthlyUsd').textContent = `$${monthlyUsd.toLocaleString()}`;
+  document.getElementById('statAllTimePkr').textContent = `PKR ${allTimePkr.toLocaleString()}`;
 
   list.innerHTML = allOrders.map(o => `
     <div class="card">
@@ -196,10 +205,11 @@ function renderOrders(){
           <span class="order-id">#${o.id.slice(0,8)}</span>
           <h4 style="margin-top:2px;">${o.product_title}</h4>
         </div>
-        <span style="font-size:11px; padding:3px 8px; border-radius:10px; background:${o.status==='approved'?'#0f3a1f':'#3a2f0a'}; color:${o.status==='approved'?'#4ade80':'#e0b93a'};">${o.status.toUpperCase()}</span>
+        <span style="font-size:11px; padding:3px 8px; border-radius:10px; white-space:nowrap; background:${o.status==='approved'?'#0f3a1f':'#3a2f0a'}; color:${o.status==='approved'?'#4ade80':'#e0b93a'};">${o.status.toUpperCase()}</span>
       </div>
-      <div style="font-size:12px; color:var(--chalk-dim);">📧 ${o.customer_email || 'N/A'} | 💰 ${o.price} | 💳 ${o.payment_method}</div>
-      ${o.status === 'pending' ? `<button class="action-btn approve-btn" style="margin-top:10px; width:100%;" onclick="approveOrder('${o.id}', '${o.customer_email}', '${o.product_title.replace(/'/g,"\\'")}', '${o.product_id}')">✓ Approve Order & Send Email</button>` : ''}
+      <div style="font-size:12px; color:var(--chalk-dim);">📧 ${o.customer_email || 'N/A'} | 💰 ${o.currency || 'PKR'} ${o.price} | 💳 ${o.payment_method}</div>
+      ${o.payment_proof_url ? `<div style="font-size:12px; margin-top:6px;"><a href="${o.payment_proof_url}" target="_blank" style="color:var(--gold-bright);">🧾 View payment screenshot</a></div>` : ''}
+      ${o.status === 'pending' ? `<button class="action-btn approve-btn" style="margin-top:10px; width:100%;" onclick="approveOrder('${o.id}', '${o.customer_email}', '${(o.product_title||'').replace(/'/g,"\\'")}', '${o.product_id || ''}')">✓ Approve Order &amp; Send Email</button>` : ''}
     </div>
   `).join('');
 }
@@ -207,33 +217,38 @@ function renderOrders(){
 async function approveOrder(id, email, title, productId){
   await sb.from('orders').update({ status: 'approved' }).eq('id', id);
 
-  // Auto-increment Sold Count in database
-  if(productId && productId !== 'null'){
+  // Increment sold_count
+  if(productId){
     const { data: p } = await sb.from('products').select('sold_count').eq('id', productId).single();
     if(p){ await sb.from('products').update({ sold_count: (p.sold_count || 0) + 1 }).eq('id', productId); }
   }
 
-  // Auto Email
+  // Send email via secure Edge Function (Resend key stays server-side, never exposed here)
   try {
-    await fetch("https://api.resend.com/emails", {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-order-email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: "FahadByte <onboarding@resend.dev>",
-        to: [email],
-        subject: `Order Approved — ${title}`,
-        html: `<p>Hi,</p><p>Your order for <strong>${title}</strong> is approved!</p>`
-      })
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ email, title })
     });
-    alert('Order approved, email sent & sold count updated!');
-  } catch(e){ alert('Order approved!'); }
+    const result = await res.json();
+    if(result.success) alert('Order approved, email sent & sold count updated!');
+    else alert('Order approved, but email failed — please follow up manually.');
+  } catch(e){
+    alert('Order approved! (Email function not reachable — check Edge Function deployment.)');
+  }
+  await loadProducts();
   loadOrders();
-  loadProducts();
 }
 
-// PRODUCTS MANAGER
+// ============ PRODUCTS MANAGER ============
 async function loadProducts(){
   const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+  productsMap = {};
+  (data || []).forEach(p => { productsMap[p.id] = p; });
   const list = document.getElementById('productsList');
   list.innerHTML = (data || []).map(p => `
     <div class="card">
@@ -243,10 +258,12 @@ async function loadProducts(){
       </div>
       <div style="font-size:12px; color:var(--chalk-dim); margin-bottom:6px;">${p.description || ''}</div>
       <div style="font-size:12px; color:var(--gold-bright);">
-        PKR ${p.price_pkr} / $${p.price_usd} 
-        ${p.discount_percent > 0 ? `<span style="color:#4ade80;">(${p.discount_percent}% OFF)</span>` : ''} 
+        PKR ${p.price_pkr} / $${p.price_usd}
+        ${p.discount_percent > 0 ? `<span style="color:#4ade80;"> (${p.discount_percent}% OFF)</span>` : ''}
         | 🔥 Sold: ${p.sold_count || 0}
+        | ${p.is_active ? '🟢 Active' : '🔴 Hidden'}
       </div>
+      <button class="action-btn" style="margin-top:8px; background:var(--panel-2); color:var(--chalk); border:1px solid var(--line);" onclick="toggleActive('${p.id}', ${p.is_active})">${p.is_active ? 'Hide from site' : 'Show on site'}</button>
     </div>
   `).join('');
 }
@@ -265,6 +282,14 @@ async function saveProduct(){
   alert('Service Published to Website!');
   document.getElementById('pTitle').value = '';
   document.getElementById('pDesc').value = '';
+  document.getElementById('pPricePkr').value = '';
+  document.getElementById('pPriceUsd').value = '';
+  document.getElementById('pDiscount').value = '';
+  loadProducts();
+}
+
+async function toggleActive(id, current){
+  await sb.from('products').update({ is_active: !current }).eq('id', id);
   loadProducts();
 }
 
