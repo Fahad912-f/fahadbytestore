@@ -62,9 +62,12 @@
     <button class="action-btn delete-btn" id="logoutBtn">Logout</button>
   </div>
 
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('orders')">📦 Orders &amp; Sales</button>
-    <button class="tab-btn" onclick="switchTab('products')">⚙ Manage Services</button>
+  <div class="nav-tabs" style="flex-wrap:wrap;">
+    <button class="tab-btn active" onclick="switchTab('orders')">📦 Orders</button>
+    <button class="tab-btn" onclick="switchTab('products')">⚙ Services</button>
+    <button class="tab-btn" onclick="switchTab('stores')">🏪 Stores <span id="storeBadge" style="display:none;background:#e0453f;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>
+    <button class="tab-btn" onclick="switchTab('reviews')">⭐ Reviews <span id="reviewBadge" style="display:none;background:#e0453f;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>
+    <button class="tab-btn" onclick="switchTab('notifications')">🔔 Alerts <span id="notifBadge" style="display:none;background:#e0453f;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>
   </div>
 
   <!-- ORDERS SECTION -->
@@ -102,6 +105,33 @@
 
     <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Active Services</h3>
     <div id="productsList"></div>
+  </div>
+
+  <!-- STORES SECTION -->
+  <div id="storesSection" style="display:none;">
+    <h3 style="font-family:var(--display); margin-bottom:14px; color:var(--gold);">Pending Store Approvals</h3>
+    <div id="pendingStoresList"></div>
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Approved Stores</h3>
+    <div id="approvedStoresList"></div>
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Suspended / Rejected Stores</h3>
+    <div id="otherStoresList"></div>
+  </div>
+
+  <!-- REVIEWS SECTION -->
+  <div id="reviewsSection" style="display:none;">
+    <h3 style="font-family:var(--display); margin-bottom:14px; color:var(--gold);">Pending Reviews</h3>
+    <div id="pendingReviewsList"></div>
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Approved Reviews</h3>
+    <div id="approvedReviewsList"></div>
+  </div>
+
+  <!-- NOTIFICATIONS SECTION -->
+  <div id="notificationsSection" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 style="font-family:var(--display); color:var(--gold);">Notifications</h3>
+      <button class="action-btn" style="background:var(--panel-2); color:var(--chalk); border:1px solid var(--line);" onclick="markAllRead()">Mark all read</button>
+    </div>
+    <div id="notificationsList"></div>
   </div>
 </div>
 
@@ -144,19 +174,39 @@ function showAdmin(){
   loginScreen.style.display = 'none';
   adminScreen.style.display = 'block';
   loadProducts().then(loadOrders);
+  refreshBadges();
+}
+
+async function refreshBadges(){
+  const { count: pendingReviews } = await sb.from('reviews').select('*', { count: 'exact', head: true }).eq('approved', false);
+  const reviewBadge = document.getElementById('reviewBadge');
+  if(pendingReviews > 0){ reviewBadge.textContent = pendingReviews; reviewBadge.style.display = 'inline-block'; }
+  else { reviewBadge.style.display = 'none'; }
+
+  const { count: unreadNotifs } = await sb.from('notifications').select('*', { count: 'exact', head: true }).eq('is_read', false);
+  const notifBadge = document.getElementById('notifBadge');
+  if(unreadNotifs > 0){ notifBadge.textContent = unreadNotifs; notifBadge.style.display = 'inline-block'; }
+  else { notifBadge.style.display = 'none'; }
+
+  const { count: pendingStores } = await sb.from('stores').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+  const storeBadge = document.getElementById('storeBadge');
+  if(pendingStores > 0){ storeBadge.textContent = pendingStores; storeBadge.style.display = 'inline-block'; }
+  else { storeBadge.style.display = 'none'; }
 }
 
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  if(tab === 'orders'){
-    document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    document.getElementById('ordersSection').style.display = 'block';
-    document.getElementById('productsSection').style.display = 'none';
-  } else {
-    document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    document.getElementById('ordersSection').style.display = 'none';
-    document.getElementById('productsSection').style.display = 'block';
-  }
+  const sections = ['orders','products','stores','reviews','notifications'];
+  const idx = sections.indexOf(tab);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  document.getElementById('ordersSection').style.display = tab === 'orders' ? 'block' : 'none';
+  document.getElementById('productsSection').style.display = tab === 'products' ? 'block' : 'none';
+  document.getElementById('storesSection').style.display = tab === 'stores' ? 'block' : 'none';
+  document.getElementById('reviewsSection').style.display = tab === 'reviews' ? 'block' : 'none';
+  document.getElementById('notificationsSection').style.display = tab === 'notifications' ? 'block' : 'none';
+  if(tab === 'stores') loadStores();
+  if(tab === 'reviews') loadReviews();
+  if(tab === 'notifications') loadNotifications();
 }
 
 // ============ ORDERS ============
@@ -298,6 +348,123 @@ async function deleteProduct(id){
     await sb.from('products').delete().eq('id', id);
     loadProducts();
   }
+}
+
+// ============ REVIEWS MODERATION ============
+async function loadReviews(){
+  const { data: pending } = await sb.from('reviews').select('*, products(title)').eq('approved', false).order('created_at', { ascending: false });
+  const { data: approved } = await sb.from('reviews').select('*, products(title)').eq('approved', true).order('created_at', { ascending: false }).limit(20);
+
+  const pendingList = document.getElementById('pendingReviewsList');
+  pendingList.innerHTML = (pending && pending.length) ? pending.map(r => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <h4>${r.reviewer_name} <span style="color:var(--gold);">${'★'.repeat(r.rating)}</span></h4>
+          <div style="font-size:11px;color:var(--chalk-dim);">${r.products ? r.products.title : 'No product linked'}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;margin:8px 0;">${r.comment}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="action-btn approve-btn" style="flex:1;" onclick="moderateReview('${r.id}', true)">✓ Approve</button>
+        <button class="action-btn delete-btn" style="flex:1;" onclick="moderateReview('${r.id}', false)">✕ Reject</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No pending reviews.</p>';
+
+  const approvedList = document.getElementById('approvedReviewsList');
+  approvedList.innerHTML = (approved && approved.length) ? approved.map(r => `
+    <div class="card">
+      <h4>${r.reviewer_name} <span style="color:var(--gold);">${'★'.repeat(r.rating)}</span></h4>
+      <div style="font-size:12px;color:var(--chalk-dim);margin:4px 0;">${r.comment}</div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No approved reviews yet.</p>';
+}
+
+async function moderateReview(id, approve){
+  if(approve){
+    await sb.from('reviews').update({ approved: true }).eq('id', id);
+  } else {
+    await sb.from('reviews').delete().eq('id', id);
+  }
+  loadReviews();
+  refreshBadges();
+}
+
+// ============ NOTIFICATIONS ============
+async function loadNotifications(){
+  const { data } = await sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(50);
+  const list = document.getElementById('notificationsList');
+
+  const icons = { new_order: '📦', new_review: '⭐', new_store: '🏪' };
+
+  list.innerHTML = (data && data.length) ? data.map(n => `
+    <div class="card" style="${n.is_read ? 'opacity:.55;' : 'border-color:var(--gold);'}">
+      <div style="display:flex; justify-content:space-between; align-items:start; gap:10px;">
+        <div style="font-size:13px;">${icons[n.type] || '🔔'} ${n.message}</div>
+        ${!n.is_read ? `<button class="action-btn" style="background:var(--panel-2); color:var(--chalk); border:1px solid var(--line); white-space:nowrap;" onclick="markRead('${n.id}')">Mark read</button>` : ''}
+      </div>
+      <div style="font-size:11px;color:var(--chalk-dim);margin-top:6px;">${new Date(n.created_at).toLocaleString()}</div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No notifications yet.</p>';
+}
+
+async function markRead(id){
+  await sb.from('notifications').update({ is_read: true }).eq('id', id);
+  loadNotifications();
+  refreshBadges();
+}
+
+async function markAllRead(){
+  await sb.from('notifications').update({ is_read: true }).eq('is_read', false);
+  loadNotifications();
+  refreshBadges();
+}
+
+// ============ STORES MANAGEMENT ============
+async function loadStores(){
+  const { data: pending } = await sb.from('stores').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+  const { data: approved } = await sb.from('stores').select('*').eq('status', 'approved').order('created_at', { ascending: false });
+  const { data: other } = await sb.from('stores').select('*').in('status', ['rejected', 'suspended']).order('created_at', { ascending: false });
+
+  document.getElementById('pendingStoresList').innerHTML = (pending && pending.length) ? pending.map(s => `
+    <div class="card">
+      <h4>${s.store_name}</h4>
+      <div style="font-size:12px;color:var(--chalk-dim);margin:6px 0;">${s.description || ''}</div>
+      ${s.reg_fee_proof_url ? `<a href="${s.reg_fee_proof_url}" target="_blank" style="font-size:12px;color:var(--gold-bright);">🧾 View registration payment</a>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="action-btn approve-btn" style="flex:1;" onclick="setStoreStatus('${s.id}','approved')">✓ Approve</button>
+        <button class="action-btn delete-btn" style="flex:1;" onclick="setStoreStatus('${s.id}','rejected')">✕ Reject</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No pending store requests.</p>';
+
+  document.getElementById('approvedStoresList').innerHTML = (approved && approved.length) ? approved.map(s => `
+    <div class="card">
+      <div class="card-top">
+        <h4>${s.store_name} <span style="font-size:11px;color:#4ade80;">ACTIVE</span></h4>
+        <button class="action-btn delete-btn" onclick="setStoreStatus('${s.id}','suspended')">Suspend</button>
+      </div>
+      <div style="font-size:12px;color:var(--chalk-dim);">${s.description || ''}</div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No approved stores yet.</p>';
+
+  document.getElementById('otherStoresList').innerHTML = (other && other.length) ? other.map(s => `
+    <div class="card">
+      <div class="card-top">
+        <h4>${s.store_name} <span style="font-size:11px;color:#e0453f;">${s.status.toUpperCase()}</span></h4>
+        ${s.status === 'suspended' ? `<button class="action-btn approve-btn" onclick="setStoreStatus('${s.id}','approved')">Reactivate</button>` : ''}
+      </div>
+      <div style="font-size:12px;color:var(--chalk-dim);">${s.description || ''}</div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">None.</p>';
+}
+
+async function setStoreStatus(id, status){
+  const { error } = await sb.from('stores').update({ status }).eq('id', id);
+  if(error){ alert('Failed: ' + error.message); return; }
+  loadStores();
+  refreshBadges();
 }
 </script>
 </body>
