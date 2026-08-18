@@ -399,12 +399,56 @@
   .close-btn{ position:absolute; top:20px; right:20px; background:none; border:none; color:var(--chalk-dim); font-size:20px; cursor:pointer; }
   .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--gold); color:var(--bg); padding:12px 22px; border-radius:8px; font-size:13px; font-weight:600; z-index:1100; transition:transform .3s ease; }
   .toast.show{ transform:translateX(-50%) translateY(0); }
+
+  /* ---------- Bismillah Welcome Modal ---------- */
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  @keyframes glowPulse { 0%,100%{text-shadow:0 0 12px rgba(201,162,39,.4);} 50%{text-shadow:0 0 26px rgba(201,162,39,.85);} }
+  @keyframes riseIn { from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
+  #bismillahOverlay{
+    position:fixed; inset:0; z-index:3000;
+    background:radial-gradient(circle at 50% 30%, rgba(201,162,39,.10), transparent 60%), rgba(4,5,7,.92);
+    backdrop-filter:blur(14px);
+    display:flex; align-items:center; justify-content:center;
+    animation:fadeIn .6s ease;
+    padding:24px;
+  }
+  #bismillahOverlay.hide{ display:none; }
+  .bismillah-card{
+    max-width:420px; text-align:center;
+    background:linear-gradient(180deg, rgba(20,24,33,.7), rgba(15,18,22,.7));
+    border:1px solid var(--gold-dim);
+    border-radius:20px;
+    padding:40px 28px;
+    animation:riseIn .7s ease .1s both;
+  }
+  .bismillah-arabic{
+    font-size:32px; color:var(--gold-bright);
+    margin-bottom:16px; line-height:1.6;
+    animation:glowPulse 2.5s ease-in-out infinite;
+  }
+  .bismillah-urdu{ font-size:16px; color:var(--chalk); margin-bottom:8px; }
+  .bismillah-english{ font-size:13px; color:var(--chalk-dim); font-style:italic; margin-bottom:28px; }
+  .bismillah-btn{
+    background:var(--gold); color:var(--bg); border:none;
+    padding:12px 28px; border-radius:8px; font-weight:700; font-size:14px;
+    cursor:pointer; font-family:var(--body);
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<!-- ================= NAV ================= -->
+<!-- ============= BISMILLAH WELCOME MODAL ============= -->
+<div id="bismillahOverlay">
+  <div class="bismillah-card">
+    <div class="bismillah-arabic">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+    <div class="bismillah-urdu">شروع اللہ کے نام سے جو بڑا مہربان نہایت رحم والا ہے</div>
+    <div class="bismillah-english">In the name of Allah, the Most Gracious, the Most Merciful</div>
+    <button class="bismillah-btn" id="enterStoreBtn">Enter Store →</button>
+  </div>
+</div>
+
+<!-- ============= NAV ============= -->
 <nav class="site-nav">
   <a href="#" class="nav-logo">Fahad<span>Byte</span></a>
   <div class="nav-links">
@@ -467,13 +511,13 @@
   </div>
 
   <div class="store-tabs">
-    <button class="tab-btn active" data-filter="all">All</button>
-    <button class="tab-btn" data-filter="product">Digital Products</button>
-    <button class="tab-btn" data-filter="service">Services</button>
-    <button class="tab-btn" data-filter="notes">Study Notes</button>
+    <button class="tab-btn active" data-filter="all">All Items</button>
+    <button class="tab-btn" data-filter="digital_app">Apps &amp; Licenses</button>
+    <button class="tab-btn" data-filter="cv_builder">CV Service</button>
+    <button class="tab-btn" data-filter="manual_service">Custom Development</button>
   </div>
 
-  <div class="store-grid" id="storeGrid"></div>
+  <div class="store-grid" id="storeGrid"><p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">Loading products...</p></div>
 </section>
 
 <!-- ================= NOTES ANCHOR (uses same grid/filter) ================= -->
@@ -532,61 +576,34 @@
     <div class="drawer-title" id="drawerTitle">Product Name</div>
     <div class="drawer-price" id="drawerPrice">PKR 0 · $0</div>
 
-    <div class="method-toggle" id="methodToggle">
-      <button class="method-btn active" data-method="local">🇵🇰 Local Payment</button>
-      <button class="method-btn" data-method="intl">🌍 International</button>
+    <div class="account-box">
+      <div class="account-row"><span>JazzCash / EasyPaisa / NayaPay</span><span>0349-5325927</span></div>
+      <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
+      <div class="account-row"><span>Payoneer / Binance Pay ID</span><span>Fahadfaheem814@gmail.com</span></div>
     </div>
 
-    <!-- Shipping fields — only shown for physical products -->
-    <div id="shippingBlock" style="display:none; margin-bottom:16px;">
-      <label class="field-label">Full Name</label>
-      <input type="text" class="form-input" id="shipName" placeholder="Your full name">
-      <label class="field-label">Phone Number</label>
-      <input type="text" class="form-input" id="shipPhone" placeholder="03XX-XXXXXXX">
-      <label class="field-label">Delivery Address</label>
-      <textarea class="form-textarea" id="shipAddress" placeholder="House#, street, area, city"></textarea>
+    <label class="field-label">Your Email</label>
+    <input type="email" class="form-input" id="orderEmail" placeholder="you@example.com">
+
+    <label class="field-label">Payment Method</label>
+    <select class="form-input" id="orderPaymentMethod">
+      <option value="JazzCash">JazzCash</option>
+      <option value="EasyPaisa">EasyPaisa</option>
+      <option value="NayaPay">NayaPay</option>
+      <option value="Binance">Binance</option>
+      <option value="Payoneer">Payoneer (International)</option>
+    </select>
+
+    <label class="field-label">Upload Payment Screenshot</label>
+    <div class="upload-box" id="uploadBox">
+      <span id="uploadText">📎 Tap to upload screenshot</span>
     </div>
+    <input type="file" id="screenshotInput" accept="image/*">
 
-    <div class="pay-panel active" id="localPanel">
-      <div class="account-box">
-        <div class="account-row"><span>JazzCash</span><span>0349-5325927</span></div>
-        <div class="account-row"><span>NayaPay</span><span>0349-5325927</span></div>
-        <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
-      </div>
+    <button class="confirm-btn" id="confirmOrderBtn">Confirm Order</button>
+    <p id="orderError" style="color:#e0453f;font-size:12px;margin-top:10px;display:none;"></p>
 
-      <label class="field-label" id="uploadLabel">Upload Payment Screenshot</label>
-      <div class="upload-box" id="uploadBox">
-        <span id="uploadText">📎 Tap to upload screenshot</span>
-      </div>
-      <input type="file" id="screenshotInput" accept="image/*">
-
-      <button class="confirm-btn" id="confirmLocal" disabled>Confirm Order</button>
-
-      <a class="wa-btn" href="https://wa.me/923495325927" target="_blank" style="margin-top:12px;">💬 Or confirm directly via WhatsApp</a>
-    </div>
-
-    <div class="pay-panel" id="codPanel">
-      <div class="account-box">
-        <div class="account-row"><span>Payment</span><span>Cash on Delivery</span></div>
-        <div class="account-row"><span>Pay when</span><span>Item arrives at your door</span></div>
-      </div>
-      <p style="font-size:12px;color:var(--chalk-dim);margin-bottom:16px;">Fill your delivery details above, then confirm — no payment needed now.</p>
-      <button class="confirm-btn" id="confirmCod">Confirm COD Order</button>
-    </div>
-
-    <div class="pay-panel" id="intlPanel">
-      <div class="account-box">
-        <div class="account-row"><span>Payoneer Email</span><span>Fahadfaheem814@gmail.com</span></div>
-        <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
-      </div>
-      <p style="font-size:12px;color:var(--chalk-dim);margin-bottom:16px;">Send payment to the Payoneer email above, then upload your receipt/screenshot.</p>
-      <label class="field-label">Upload Payment Screenshot</label>
-      <div class="upload-box" id="uploadBoxIntl">
-        <span id="uploadTextIntl">📎 Tap to upload screenshot</span>
-      </div>
-      <input type="file" id="screenshotInputIntl" accept="image/*">
-      <button class="confirm-btn" id="confirmIntl" disabled>Confirm Order</button>
-    </div>
+    <a class="wa-btn" href="https://wa.me/923495325927" target="_blank" style="margin-top:12px;">💬 Or confirm directly via WhatsApp</a>
   </div>
 </div>
 
@@ -701,203 +718,73 @@ sb.auth.getSession().then(({ data: { session } }) => {
   authNavBtn.textContent = currentUser ? `👤 ${currentUser.email.split('@')[0]} (Logout)` : 'Login';
 });
 
-// ---- PRODUCTS: type = 'product' | 'service' | 'notes' ----
-const PRODUCTS = [
-  {
-    id: 'p1', type: 'product',
-    title: 'ATS Resume Template Pack (5 Designs)',
-    desc: 'Editable Word/Canva resume templates, single-column, ATS-optimized.',
-    tags: ['Word', 'Canva', 'ATS'],
-    pkr: 1200, usd: 5, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-product-link'
-  },
-  {
-    id: 'p2', type: 'product',
-    title: 'Landing Page Starter Kit (HTML/CSS/JS)',
-    desc: 'Clean, responsive one-page site template — plug in your content and deploy.',
-    tags: ['HTML', 'CSS', 'JS'],
-    pkr: 2000, usd: 8, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-product-link-2'
-  },
-  {
-    id: 's1', type: 'service',
-    title: 'Bug/Error Fixing (per error)',
-    desc: 'I fix bugs in your website/script — HTML, CSS, JS, or Python. Priced per error, based on complexity.',
-    tags: ['Debugging', 'Per Error', 'Python'],
-    pkr: 500, usd: 2, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link'
-  },
-  {
-    id: 's2', type: 'service',
-    title: 'Custom Portfolio Website',
-    desc: 'Full custom-built personal/developer portfolio site, mobile responsive.',
-    tags: ['HTML', 'CSS', 'Responsive'],
-    pkr: 7000, usd: 28, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-2'
-  },
-  {
-    id: 's3', type: 'service',
-    title: 'SEO Content Writing (per article)',
-    desc: '800–1200 word SEO-optimized article, keyword researched, ready to publish.',
-    tags: ['SEO', 'Content', 'Copywriting'],
-    pkr: 1200, usd: 5, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-3'
-  },
-  {
-    id: 's4', type: 'service',
-    title: 'Professional Resume / CV Writing',
-    desc: 'ATS-optimized single-column resume, tailored to your target role, 2 revisions included.',
-    tags: ['Resume', 'ATS', 'CV'],
-    pkr: 2000, usd: 8, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-4'
-  },
-  {
-    id: 's5', type: 'service',
-    title: 'Translation — English ⇄ Arabic / Urdu',
-    desc: 'Accurate, context-aware translation. Priced per 500 words.',
-    tags: ['Translation', 'Arabic', 'Urdu'],
-    pkr: 900, usd: 4, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-5'
-  },
-  {
-    id: 's6', type: 'service',
-    title: 'Speech / Script Writing',
-    desc: 'Custom speech or script writing — persuasive, structured, audience-tailored.',
-    tags: ['Speech', 'Script', 'Writing'],
-    pkr: 1500, usd: 6, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-6'
-  },
-  {
-    id: 's7', type: 'service',
-    title: 'Cover Letter Writing',
-    desc: 'Tailored cover letter matched to job description and your resume.',
-    tags: ['Cover Letter', 'Job Application'],
-    pkr: 900, usd: 4, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-7'
-  },
-  {
-    id: 's8', type: 'service',
-    title: 'LinkedIn Profile Optimization',
-    desc: 'Headline, About section, and experience rewrite to boost visibility & recruiter reach.',
-    tags: ['LinkedIn', 'Personal Branding'],
-    pkr: 1300, usd: 5, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-8'
-  },
-  {
-    id: 's9', type: 'service',
-    title: 'Proofreading & Editing (per 1000 words)',
-    desc: 'Grammar, clarity, and structure editing for essays, assignments, or documents.',
-    tags: ['Proofreading', 'Editing'],
-    pkr: 600, usd: 2, rating: 4,
-    gumroad: 'https://gumroad.com/l/your-service-link-9'
-  },
-  {
-    id: 's10', type: 'service',
-    title: 'Business Landing Page',
-    desc: 'Multi-section responsive landing page for a business, product, or service launch.',
-    tags: ['Web Dev', 'Business', 'Responsive'],
-    pkr: 9000, usd: 35, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-10'
-  },
-  {
-    id: 's11', type: 'service',
-    title: 'Full Multi-Page Website',
-    desc: 'Complete website with multiple pages (Home, About, Services, Contact), fully responsive.',
-    tags: ['Web Dev', 'Multi-Page', 'Responsive'],
-    pkr: 15000, usd: 55, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-11'
-  },
-  {
-    id: 's12', type: 'service',
-    title: 'Video Editing (per video, up to 3 min)',
-    desc: 'Cuts, transitions, captions, background music — reels, YouTube, or promo videos.',
-    tags: ['Video Editing', 'Reels', 'YouTube'],
-    pkr: 1500, usd: 6, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-12'
-  },
-  {
-    id: 's13', type: 'service',
-    title: 'CapCut Pro Editing (Reels/TikTok style)',
-    desc: 'Trendy CapCut Pro edits — transitions, effects, text animations, viral-style formatting.',
-    tags: ['CapCut Pro', 'Reels', 'TikTok'],
-    pkr: 1200, usd: 5, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-service-link-13'
-  },
-  {
-    id: 'n1', type: 'notes',
-    title: 'ISSB Prep Notes — Complete Pack',
-    desc: 'WAT, SRT, TAT, GTO tasks, Lecturette & Interview prep — structured for Pakistani Army selection.',
-    tags: ['ISSB', 'Pakistan', 'Army'],
-    pkr: 800, usd: 3, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-notes-link'
-  },
-  {
-    id: 'n2', type: 'notes',
-    title: 'CSS/PMS General Knowledge Notes',
-    desc: 'Pak Affairs, Current Affairs, Islamiat — condensed notes for competitive exams.',
-    tags: ['CSS', 'PMS', 'Pakistan'],
-    pkr: 700, usd: 3, rating: 4,
-    gumroad: 'https://gumroad.com/l/your-notes-link-2'
-  },
-  {
-    id: 'n3', type: 'notes',
-    title: 'IELTS Writing & Speaking Notes',
-    desc: 'Band 7+ structured templates, sample answers, and speaking cue cards.',
-    tags: ['IELTS', 'International'],
-    pkr: 900, usd: 4, rating: 5,
-    gumroad: 'https://gumroad.com/l/your-notes-link-3'
-  },
-  {
-    id: 'n4', type: 'notes',
-    title: 'SAT Quick Revision Notes',
-    desc: 'Math + Reading/Writing condensed formula sheets and strategy notes.',
-    tags: ['SAT', 'International'],
-    pkr: 900, usd: 4, rating: 4,
-    gumroad: 'https://gumroad.com/l/your-notes-link-4'
-  }
-];
-
-// ---- REVIEWS: add approved reviews here after they come in via the form ----
-const REVIEWS = [
-  { name: 'Ayesha K.', product: 'ATS Resume Template Pack', rating: 5, text: 'Got my resume redone in a day, landed 2 interviews within a week.' },
-  { name: 'Bilal R.', product: 'Custom Portfolio Website', rating: 5, text: 'Clean, fast, exactly what I asked for. Great communication throughout.' },
-  { name: 'Hina S.', product: 'ISSB Prep Notes', rating: 4, text: 'Very structured, helped me a lot with WAT and SRT practice.' }
-];
-
-/* ======================================================================
-   Below this line: display logic — no need to edit unless customizing behavior.
-====================================================================== */
-
+// ============================================================
+// DYNAMIC PRODUCTS — fetched live from Supabase `products` table
+// ============================================================
 const grid = document.getElementById('storeGrid');
+let ALL_PRODUCTS = [];
+let currentFilter = 'all';
 
 function starString(n){
+  n = Math.round(n || 5);
   return '★'.repeat(n) + '<span>' + '★'.repeat(5-n) + '</span>';
 }
 
+function categoryLabel(cat){
+  return cat === 'digital_app' ? 'Digital Product' : cat === 'cv_builder' ? 'CV Service' : 'Custom Development';
+}
+
+async function loadProducts(){
+  const { data, error } = await sb
+    .from('products')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    grid.innerHTML = `<p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">Could not load products. Please refresh.</p>`;
+    console.error(error);
+    return;
+  }
+  ALL_PRODUCTS = data;
+  renderProducts(currentFilter);
+}
+
 function renderProducts(filter){
+  currentFilter = filter;
   grid.innerHTML = '';
-  const list = filter === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.type === filter);
+  const list = filter === 'all' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p => p.category === filter);
+
+  if(list.length === 0){
+    grid.innerHTML = `<p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">No items in this category yet.</p>`;
+    return;
+  }
+
   list.forEach(p => {
-    const typeLabel = p.type === 'product' ? 'Digital Product' : p.type === 'service' ? 'Service Package' : 'Study Notes';
+    const hasDiscount = p.discount_percent > 0;
+    const discountedPkr = hasDiscount ? Math.round(p.price_pkr * (1 - p.discount_percent / 100)) : p.price_pkr;
+    const discountedUsd = hasDiscount ? (p.price_usd * (1 - p.discount_percent / 100)).toFixed(2) : p.price_usd;
+
     const card = document.createElement('div');
     card.className = 'product-card';
     card.innerHTML = `
-      ${p.img ? `<img class="product-image" src="${p.img}" alt="${p.title}">` : ''}
-      <span class="product-type">${typeLabel}</span>
+      <span class="product-type">${categoryLabel(p.category)}</span>
       <div class="product-title">${p.title}</div>
-      <div class="product-desc">${p.desc}</div>
-      <div class="stars-mini">${starString(p.rating)}</div>
-      <div class="tag-row">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      <div class="product-desc">${p.description || ''}</div>
+      ${p.sold_count > 0 ? `<span class="tag" style="width:fit-content;">🔥 ${p.sold_count} sold</span>` : ''}
       <div class="price-row">
-        <span class="price-pkr">PKR ${p.pkr.toLocaleString()}</span>
-        <span class="price-usd">≈ $${p.usd} USD</span>
+        <div>
+          <span class="price-pkr">PKR ${Number(discountedPkr).toLocaleString()}</span>
+          ${hasDiscount ? `<span class="price-usd" style="text-decoration:line-through;margin-left:6px;">PKR ${Number(p.price_pkr).toLocaleString()}</span>` : ''}
+        </div>
+        <span class="price-usd">≈ $${discountedUsd} USD</span>
       </div>
-      <button class="buy-btn" data-id="${p.id}">Buy Now</button>
+      ${hasDiscount ? `<span class="tag" style="background:#3a1414;border-color:#e0453f;color:#ff8a8a;width:fit-content;">-${p.discount_percent}% OFF</span>` : ''}
+      <button class="buy-btn" data-id="${p.id}">Order Now</button>
     `;
     grid.appendChild(card);
   });
 }
-renderProducts('all');
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -907,31 +794,53 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// ---------- Reviews render ----------
+loadProducts();
+
+// ============================================================
+// DYNAMIC REVIEWS — fetched live from Supabase `reviews` table
+// ============================================================
 const reviewGrid = document.getElementById('reviewGrid');
+let ALL_REVIEWS = [];
+
+async function loadReviews(){
+  const { data, error } = await sb
+    .from('reviews')
+    .select('*, products(title)')
+    .eq('approved', true)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if(error){ console.error(error); return; }
+  ALL_REVIEWS = data;
+  renderReviews();
+}
+
 function renderReviews(){
   reviewGrid.innerHTML = '';
-  REVIEWS.forEach(r => {
+  if(ALL_REVIEWS.length === 0){
+    reviewGrid.innerHTML = `<p style="color:var(--chalk-dim);font-size:13px;">No reviews yet — be the first!</p>`;
+  }
+  ALL_REVIEWS.forEach(r => {
     const card = document.createElement('div');
     card.className = 'review-card';
     card.innerHTML = `
       <div class="review-top">
-        <span class="review-name">${r.name}</span>
+        <span class="review-name">${r.reviewer_name}</span>
         <span class="review-stars">${starString(r.rating)}</span>
       </div>
-      <div class="review-text">${r.text}</div>
-      <span class="review-product">Ordered: ${r.product}</span>
+      <div class="review-text">${r.comment}</div>
+      ${r.products ? `<span class="review-product">Ordered: ${r.products.title}</span>` : ''}
     `;
     reviewGrid.appendChild(card);
   });
-  const avg = REVIEWS.length ? (REVIEWS.reduce((s,r) => s + r.rating, 0) / REVIEWS.length) : 5;
+  const avg = ALL_REVIEWS.length ? (ALL_REVIEWS.reduce((s,r) => s + r.rating, 0) / ALL_REVIEWS.length) : 5;
   document.getElementById('avgScore').textContent = avg.toFixed(1);
-  document.getElementById('avgStars').innerHTML = starString(Math.round(avg));
-  document.getElementById('avgCount').textContent = `based on ${REVIEWS.length} reviews`;
+  document.getElementById('avgStars').innerHTML = starString(avg);
+  document.getElementById('avgCount').textContent = `based on ${ALL_REVIEWS.length} reviews`;
 }
-renderReviews();
+loadReviews();
 
-// ---------- Review submission (sends to your email via Web3Forms) ----------
+// ---------- Review submission form ----------
 let selectedStars = 5;
 document.querySelectorAll('#starSelect button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -947,114 +856,61 @@ document.querySelectorAll('#starSelect button').forEach(b => {
 
 document.getElementById('submitReview').addEventListener('click', async () => {
   const name = document.getElementById('reviewName').value.trim();
-  const product = document.getElementById('reviewProduct').value.trim();
+  const productTitle = document.getElementById('reviewProduct').value.trim();
   const text = document.getElementById('reviewText').value.trim();
   if(!name || !text){ alert('Please add your name and review.'); return; }
 
-  const formData = new FormData();
-  formData.append("access_key", WEB3FORMS_KEY);
-  formData.append("subject", `New Review Submitted — ${selectedStars}★`);
-  formData.append("name", name);
-  formData.append("product", product);
-  formData.append("rating", selectedStars);
-  formData.append("review", text);
+  const matchedProduct = ALL_PRODUCTS.find(p => p.title.toLowerCase() === productTitle.toLowerCase());
 
-  try {
-    const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
-    const result = await res.json();
-    if(result.success){
-      alert("Thanks! Your review has been sent for approval.");
-      document.getElementById('reviewName').value = '';
-      document.getElementById('reviewProduct').value = '';
-      document.getElementById('reviewText').value = '';
-    } else {
-      alert("Something went wrong — please try again.");
-    }
-  } catch(err){
-    alert("Network error — please try again.");
-  }
+  const { error } = await sb.from('reviews').insert({
+    product_id: matchedProduct ? matchedProduct.id : null,
+    reviewer_name: name,
+    rating: selectedStars,
+    comment: text
+  });
+
+  if(error){ alert('Something went wrong — please try again.'); console.error(error); return; }
+
+  alert('Thanks! Your review has been posted.');
+  document.getElementById('reviewName').value = '';
+  document.getElementById('reviewProduct').value = '';
+  document.getElementById('reviewText').value = '';
+  loadReviews();
 });
 
-// ---------- Checkout Drawer ----------
+// ============================================================
+// CHECKOUT — email + payment method + screenshot → Supabase Storage + orders table
+// ============================================================
 const overlay = document.getElementById('checkoutOverlay');
 const drawerTitle = document.getElementById('drawerTitle');
 const drawerPrice = document.getElementById('drawerPrice');
-const stripeLink = null; // legacy ref removed, Payoneer used instead
 let currentProduct = null;
 
 grid.addEventListener('click', e => {
   if(!e.target.classList.contains('buy-btn')) return;
-  if(!currentUser){
-    alert('Please log in or sign up first to place an order.');
-    openAuthModal();
-    return;
-  }
   const id = e.target.dataset.id;
-  currentProduct = PRODUCTS.find(p => p.id === id);
+  currentProduct = ALL_PRODUCTS.find(p => p.id === id);
   drawerTitle.textContent = currentProduct.title;
-  drawerPrice.textContent = `PKR ${currentProduct.pkr.toLocaleString()} · $${currentProduct.usd} USD`;
-  overlay.classList.add('open');
+  drawerPrice.textContent = `PKR ${Number(currentProduct.price_pkr).toLocaleString()} · $${currentProduct.price_usd} USD`;
+  document.getElementById('orderEmail').value = currentUser ? currentUser.email : '';
   resetDrawerState();
-
-  const isPhysical = currentProduct.type === 'physical';
-  document.getElementById('shippingBlock').style.display = isPhysical ? 'block' : 'none';
-  const toggle = document.getElementById('methodToggle');
-  if(isPhysical){
-    toggle.innerHTML = `
-      <button class="method-btn active" data-method="local">💳 Advance Payment</button>
-      <button class="method-btn" data-method="cod">💵 Cash on Delivery</button>
-    `;
-  } else {
-    toggle.innerHTML = `
-      <button class="method-btn active" data-method="local">🇵🇰 Local Payment</button>
-      <button class="method-btn" data-method="intl">🌍 International</button>
-    `;
-  }
-  bindMethodButtons();
+  overlay.classList.add('open');
 });
 
 document.getElementById('closeDrawer').addEventListener('click', () => overlay.classList.remove('open'));
 overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
 
-function bindMethodButtons(){
-  document.querySelectorAll('.method-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const method = btn.dataset.method;
-      document.getElementById('localPanel').classList.toggle('active', method === 'local');
-      document.getElementById('intlPanel').classList.toggle('active', method === 'intl');
-      document.getElementById('codPanel').classList.toggle('active', method === 'cod');
-    });
-  });
-}
-
 const uploadBox = document.getElementById('uploadBox');
 const screenshotInput = document.getElementById('screenshotInput');
 const uploadText = document.getElementById('uploadText');
-const confirmBtn = document.getElementById('confirmLocal');
+const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+const orderError = document.getElementById('orderError');
 
 uploadBox.addEventListener('click', () => screenshotInput.click());
 screenshotInput.addEventListener('change', () => {
   if(screenshotInput.files.length > 0){
     uploadText.textContent = '✅ ' + screenshotInput.files[0].name;
     uploadBox.classList.add('has-file');
-    confirmBtn.disabled = false;
-  }
-});
-
-// ---- Payoneer (International) upload ----
-const uploadBoxIntl = document.getElementById('uploadBoxIntl');
-const screenshotInputIntl = document.getElementById('screenshotInputIntl');
-const uploadTextIntl = document.getElementById('uploadTextIntl');
-const confirmIntl = document.getElementById('confirmIntl');
-
-uploadBoxIntl.addEventListener('click', () => screenshotInputIntl.click());
-screenshotInputIntl.addEventListener('change', () => {
-  if(screenshotInputIntl.files.length > 0){
-    uploadTextIntl.textContent = '✅ ' + screenshotInputIntl.files[0].name;
-    uploadBoxIntl.classList.add('has-file');
-    confirmIntl.disabled = false;
   }
 });
 
@@ -1062,108 +918,67 @@ function resetDrawerState(){
   uploadText.textContent = '📎 Tap to upload screenshot';
   uploadBox.classList.remove('has-file');
   screenshotInput.value = '';
-  confirmBtn.disabled = true;
-  uploadTextIntl.textContent = '📎 Tap to upload screenshot';
-  uploadBoxIntl.classList.remove('has-file');
-  screenshotInputIntl.value = '';
-  confirmIntl.disabled = true;
-  document.getElementById('localPanel').classList.add('active');
-  document.getElementById('intlPanel').classList.remove('active');
-  document.getElementById('codPanel').classList.remove('active');
+  orderError.style.display = 'none';
+  document.getElementById('orderPaymentMethod').selectedIndex = 0;
 }
 
-async function sendOrder(extra, fileInput){
-  // Save order in Supabase (your database/admin panel source of truth)
-  const { error } = await sb.from('orders').insert({
-    user_id: currentUser.id,
-    customer_email: currentUser.email,
-    product_title: currentProduct.title,
-    price: `PKR ${currentProduct.pkr} / $${currentProduct.usd}`,
-    payment_method: extra.payment_method || 'N/A',
-    status: 'pending'
-  });
-  if(error){ console.error(error); return false; }
+confirmOrderBtn.addEventListener('click', async () => {
+  const email = document.getElementById('orderEmail').value.trim();
+  const paymentMethod = document.getElementById('orderPaymentMethod').value;
+  orderError.style.display = 'none';
 
-  // Also send a Web3Forms email notification (text-only, screenshot goes via WhatsApp)
-  try {
-    const formData = new FormData();
-    formData.append("access_key", WEB3FORMS_KEY);
-    formData.append("subject", `New Order: ${currentProduct.title}`);
-    formData.append("product", currentProduct.title);
-    formData.append("customer_email", currentUser.email);
-    formData.append("price", `PKR ${currentProduct.pkr} / $${currentProduct.usd}`);
-    formData.append("note", "Payment screenshot sent separately via WhatsApp. Full order saved in Supabase — approve it from admin.html.");
-    Object.entries(extra).forEach(([k,v]) => formData.append(k, v));
-    await fetch("https://api.web3forms.com/submit", { method: "POST", body: formData });
-  } catch(e){ /* non-critical, order already saved in Supabase */ }
-
-  return true;
-}
-
-function openWhatsAppWithScreenshot(){
-  const msg = encodeURIComponent(`Order confirmed on FahadByte: ${currentProduct.title} (PKR ${currentProduct.pkr}). Sending my payment screenshot below 👇`);
-  window.open(`https://wa.me/923495325927?text=${msg}`, '_blank');
-}
-
-function getShippingInfo(){
-  return {
-    ship_name: document.getElementById('shipName').value,
-    ship_phone: document.getElementById('shipPhone').value,
-    ship_address: document.getElementById('shipAddress').value
-  };
-}
-
-confirmBtn.addEventListener('click', async () => {
-  // Open WhatsApp immediately (synchronously, on click) so mobile browsers don't block the popup
-  openWhatsAppWithScreenshot();
-
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = "Sending...";
-  try {
-    const extra = { payment_method: "Local (JazzCash/NayaPay)" };
-    if(currentProduct.type === 'physical') Object.assign(extra, getShippingInfo());
-    const ok = await sendOrder(extra);
-    if (ok) { overlay.classList.remove('open'); showToast(); }
-    else alert("Order email failed to send, but your WhatsApp should be open — please send your screenshot there.");
-  } catch (err) {
-    alert("Network error sending order email. Please send your screenshot via WhatsApp.");
+  if(!email || !email.includes('@')){
+    orderError.textContent = 'Please enter a valid email address.';
+    orderError.style.display = 'block';
+    return;
   }
-  confirmBtn.textContent = "Confirm Order";
-  confirmBtn.disabled = false;
-});
 
-confirmIntl.addEventListener('click', async () => {
-  openWhatsAppWithScreenshot();
+  confirmOrderBtn.disabled = true;
+  confirmOrderBtn.textContent = 'Sending...';
 
-  confirmIntl.disabled = true;
-  confirmIntl.textContent = "Sending...";
   try {
-    const ok = await sendOrder({ payment_method: "International (Payoneer)" });
-    if (ok) { overlay.classList.remove('open'); showToast(); }
-    else alert("Order email failed to send, but your WhatsApp should be open — please send your screenshot there.");
-  } catch (err) {
-    alert("Network error sending order email. Please send your screenshot via WhatsApp.");
-  }
-  confirmIntl.textContent = "Confirm Order";
-  confirmIntl.disabled = false;
-});
+    let proofUrl = null;
 
-document.getElementById('confirmCod').addEventListener('click', async () => {
-  const name = document.getElementById('shipName').value.trim();
-  const phone = document.getElementById('shipPhone').value.trim();
-  const address = document.getElementById('shipAddress').value.trim();
-  if(!name || !phone || !address){ alert('Please fill your name, phone, and address.'); return; }
+    // Upload screenshot to Supabase Storage (private bucket, only admin can view)
+    if(screenshotInput.files[0]){
+      const file = screenshotInput.files[0];
+      const filePath = `order_${Date.now()}_${file.name}`;
+      const { error: uploadErr } = await sb.storage.from('payment-proofs').upload(filePath, file);
+      if(!uploadErr){
+        const { data: urlData } = sb.storage.from('payment-proofs').getPublicUrl(filePath);
+        proofUrl = urlData.publicUrl;
+      }
+    }
 
-  const btn = document.getElementById('confirmCod');
-  btn.disabled = true; btn.textContent = "Sending...";
-  try {
-    const ok = await sendOrder({ payment_method: "Cash on Delivery", ...getShippingInfo() });
-    if (ok) { overlay.classList.remove('open'); showToast(); }
-    else alert("Something went wrong. Please confirm directly via WhatsApp instead.");
-  } catch (err) {
-    alert("Network error. Please WhatsApp your order: wa.me/923495325927");
+    const { error: insertErr } = await sb.from('orders').insert({
+      product_id: currentProduct.id,
+      product_title: currentProduct.title,
+      price: currentProduct.price_pkr,
+      currency: 'PKR',
+      customer_email: email,
+      payment_method: paymentMethod,
+      payment_proof_url: proofUrl,
+      order_type: currentProduct.category,
+      status: 'pending'
+    });
+
+    if(insertErr) throw insertErr;
+
+    overlay.classList.remove('open');
+    showToast();
+
+    // Also open WhatsApp as a backup confirmation channel
+    const msg = encodeURIComponent(`Order confirmed on FahadByte: ${currentProduct.title} (PKR ${currentProduct.price_pkr}). My email: ${email}`);
+    window.open(`https://wa.me/923495325927?text=${msg}`, '_blank');
+
+  } catch(err){
+    orderError.textContent = 'Something went wrong. Please try again or WhatsApp us directly.';
+    orderError.style.display = 'block';
+    console.error(err);
   }
-  btn.textContent = "Confirm COD Order"; btn.disabled = false;
+
+  confirmOrderBtn.textContent = 'Confirm Order';
+  confirmOrderBtn.disabled = false;
 });
 
 function showToast(){
@@ -1171,6 +986,14 @@ function showToast(){
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3500);
 }
+
+// ============================================================
+// BISMILLAH WELCOME MODAL
+// ============================================================
+document.getElementById('enterStoreBtn').addEventListener('click', () => {
+  document.getElementById('bismillahOverlay').classList.add('hide');
+});
+
 </script>
 
 </body>
