@@ -3,10 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>FahadByte — Digital Products, Services & Study Notes</title>
-<meta name="description" content="Digital products, freelance services, and exam prep notes by Fahad.">
+<meta name="title" content="FahadByte — Digital Products, Services & Custom Services">
+<meta name="description" content="Pakistan's trusted digital marketplace. Buy premium apps, software tools, custom CV building services, and tech deals with instant delivery.">
+<meta name="keywords" content="FahadByte, Digital Store Pakistan, Premium Apps, CV Builder Services, Software Tools, CapCut Pro, EasyPaisa Payments">
+<meta name="author" content="Fahad Faheem">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="FahadByte — Premium Digital Goods & Services">
+<meta property="og:description" content="Get premium digital assets, editing apps, and custom services with local JazzCash/EasyPaisa payments.">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
   :root{
     --bg:#08090c;
@@ -39,7 +50,7 @@
   /* ---------- Nav ---------- */
   .site-nav{
     display:flex;
-    justify-content:space-between;
+    justify-space:space-between;
     align-items:center;
     padding:18px 24px;
     border-bottom:1px solid var(--line-soft);
@@ -57,13 +68,14 @@
     letter-spacing:-0.3px;
   }
   .nav-logo span{ color:var(--gold); }
-  .nav-links{ display:flex; gap:20px; align-items:center; }
+  .nav-links{ display:flex; gap:16px; align-items:center; }
   .nav-links a{
     color:var(--chalk-dim);
     text-decoration:none;
     font-size:13px;
     font-weight:500;
     transition:.2s;
+    cursor:pointer;
   }
   .nav-links a:hover{ color:var(--gold-bright); }
   .nav-cta{
@@ -204,14 +216,6 @@
     transition:.25s ease;
   }
   .product-card:hover{ border-color:var(--gold-dim); transform:translateY(-3px); }
-  .product-image{
-    width:100%;
-    height:160px;
-    object-fit:cover;
-    border-radius:8px;
-    background:var(--bg);
-    border:1px solid var(--line);
-  }
   .product-type{
     font-family:var(--mono);
     font-size:10px;
@@ -221,8 +225,6 @@
   }
   .product-title{ font-family:var(--display); font-size:17px; font-weight:600; }
   .product-desc{ font-size:13px; color:var(--chalk-dim); flex-grow:1; }
-  .stars-mini{ font-size:12px; color:var(--gold); letter-spacing:1px; }
-  .stars-mini span{ color:var(--line); }
   .tag-row{ display:flex; flex-wrap:wrap; gap:6px; }
   .tag{
     font-family:var(--mono);
@@ -346,7 +348,7 @@
   .footer-links a:hover{ color:var(--gold-bright); }
   .footer-note{ font-size:11.5px; color:var(--chalk-dim); }
 
-  /* ---------- Checkout Drawer ---------- */
+  /* ---------- Overlay Drawers ---------- */
   .overlay{
     position:fixed; inset:0;
     background:rgba(3,4,6,.75);
@@ -378,10 +380,6 @@
   .drawer-handle{ width:36px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 18px; }
   .drawer-title{ font-family:var(--display); font-size:18px; font-weight:600; margin-bottom:4px; }
   .drawer-price{ font-family:var(--mono); color:var(--gold-bright); font-size:14px; margin-bottom:20px; }
-  .method-toggle{ display:flex; gap:8px; margin-bottom:20px; border:1px solid var(--line); border-radius:8px; padding:4px; }
-  .method-btn{ flex:1; padding:9px; background:transparent; border:none; color:var(--chalk-dim); font-size:12px; font-family:var(--mono); border-radius:5px; cursor:pointer; }
-  .method-btn.active{ background:var(--gold); color:var(--bg); font-weight:600; }
-  .pay-panel{ display:none; } .pay-panel.active{ display:block; }
   .account-box{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
   .account-row{ display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-bottom:1px dashed var(--line); }
   .account-row:last-child{ border-bottom:none; }
@@ -393,23 +391,21 @@
   .upload-box.has-file{ border-color:var(--gold); color:var(--chalk); }
   #screenshotInput{ display:none; }
   .confirm-btn{ width:100%; padding:13px; background:var(--gold); color:var(--bg); border:none; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; }
-  .confirm-btn:disabled{ opacity:.4; cursor:not-allowed; }
-  .intl-btn{ display:block; width:100%; text-align:center; padding:13px; background:var(--bg); border:1px solid var(--gold); color:var(--gold-bright); border-radius:8px; font-weight:600; font-size:14px; text-decoration:none; margin-bottom:10px; }
   .wa-btn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; text-align:center; padding:13px; background:#25D366; color:#08090c; border-radius:8px; font-weight:700; font-size:14px; text-decoration:none; margin-bottom:10px; }
   .close-btn{ position:absolute; top:20px; right:20px; background:none; border:none; color:var(--chalk-dim); font-size:20px; cursor:pointer; }
   .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(120%); background:var(--gold); color:var(--bg); padding:12px 22px; border-radius:8px; font-size:13px; font-weight:600; z-index:1100; transition:transform .3s ease; }
   .toast.show{ transform:translateX(-50%) translateY(0); }
 
-  /* ---------- Bismillah Welcome Modal ---------- */
-  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-  @keyframes glowPulse { 0%,100%{text-shadow:0 0 12px rgba(201,162,39,.4);} 50%{text-shadow:0 0 26px rgba(201,162,39,.85);} }
-  @keyframes riseIn { from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
+  /* Status Badges */
+  .badge-pending { background: #3a2c00; color: #ffd700; border:1px solid #8a7420; padding:4px 10px; border-radius:12px; font-size:11px; font-family:var(--mono); }
+  .badge-approved { background: #003a10; color: #25d366; border:1px solid #008a20; padding:4px 10px; border-radius:12px; font-size:11px; font-family:var(--mono); }
+
+  /* Bismillah Overlay */
   #bismillahOverlay{
     position:fixed; inset:0; z-index:3000;
     background:radial-gradient(circle at 50% 30%, rgba(201,162,39,.10), transparent 60%), rgba(4,5,7,.92);
     backdrop-filter:blur(14px);
     display:flex; align-items:center; justify-content:center;
-    animation:fadeIn .6s ease;
     padding:24px;
   }
   #bismillahOverlay.hide{ display:none; }
@@ -419,26 +415,16 @@
     border:1px solid var(--gold-dim);
     border-radius:20px;
     padding:40px 28px;
-    animation:riseIn .7s ease .1s both;
   }
-  .bismillah-arabic{
-    font-size:32px; color:var(--gold-bright);
-    margin-bottom:16px; line-height:1.6;
-    animation:glowPulse 2.5s ease-in-out infinite;
-  }
+  .bismillah-arabic{ font-size:32px; color:var(--gold-bright); margin-bottom:16px; line-height:1.6; }
   .bismillah-urdu{ font-size:16px; color:var(--chalk); margin-bottom:8px; }
   .bismillah-english{ font-size:13px; color:var(--chalk-dim); font-style:italic; margin-bottom:28px; }
-  .bismillah-btn{
-    background:var(--gold); color:var(--bg); border:none;
-    padding:12px 28px; border-radius:8px; font-weight:700; font-size:14px;
-    cursor:pointer; font-family:var(--body);
-  }
+  .bismillah-btn{ background:var(--gold); color:var(--bg); border:none; padding:12px 28px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<!-- ============= BISMILLAH WELCOME MODAL ============= -->
 <div id="bismillahOverlay">
   <div class="bismillah-card">
     <div class="bismillah-arabic">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
@@ -448,46 +434,22 @@
   </div>
 </div>
 
-<!-- ============= NAV ============= -->
 <nav class="site-nav">
   <a href="#" class="nav-logo">Fahad<span>Byte</span></a>
   <div class="nav-links">
     <a href="#store">Store</a>
-    <a href="#notes">Notes</a>
+    <a id="openTrackBtn">Track Order</a>
     <a href="#reviews">Reviews</a>
     <a href="https://fahad912-f.github.io" target="_blank">Portfolio</a>
     <a class="nav-cta" href="https://wa.me/923495325927" target="_blank">WhatsApp</a>
-    <a id="authNavBtn" class="nav-cta" style="cursor:pointer;">Login</a>
+    <a id="authNavBtn" class="nav-cta">Login</a>
   </div>
 </nav>
 
-<!-- ============= AUTH MODAL ============= -->
-<div class="overlay" id="authOverlay">
-  <div class="drawer">
-    <button class="close-btn" id="closeAuth">✕</button>
-    <div class="drawer-handle"></div>
-    <div class="drawer-title" id="authTitle">Log In</div>
-    <p style="font-size:12.5px;color:var(--chalk-dim);margin-bottom:18px;">Log in or create an account to place orders.</p>
-
-    <input type="email" class="form-input" id="authEmail" placeholder="Email">
-    <input type="text" class="form-input" id="authPhone" placeholder="Phone number (for signup)" style="display:none;">
-    <input type="password" class="form-input" id="authPassword" placeholder="Password">
-
-    <button class="confirm-btn" id="authSubmitBtn">Log In</button>
-    <p id="authError" style="color:var(--sale, #e0453f);font-size:12px;margin-top:10px;display:none;"></p>
-
-    <p style="font-size:12.5px;color:var(--chalk-dim);text-align:center;margin-top:16px;">
-      <span id="authToggleText">Don't have an account?</span>
-      <a href="#" id="authToggleLink" style="color:var(--gold-bright);text-decoration:none;font-weight:600;">Sign Up</a>
-    </p>
-  </div>
-</div>
-
-<!-- ================= HERO ================= -->
 <div class="hero">
   <span class="hero-eyebrow">Digital Store &amp; Studio</span>
-  <h1>Code, content &amp; <em>exam-ready</em> notes — built by Fahad.</h1>
-  <p>Digital products, freelance service packages, and structured study notes for Pakistani and international exams — all in one place.</p>
+  <h1>Code, content &amp; <em>digital goods</em> — built by Fahad.</h1>
+  <p>Premium digital apps, custom CV building services, and tech products with local Pakistani payment support.</p>
   <div class="hero-links">
     <a class="hero-link primary" href="#store">Browse Store</a>
     <a class="hero-link" href="https://fahad912-f.github.io" target="_blank">↗ Portfolio</a>
@@ -497,38 +459,33 @@
 </div>
 
 <div class="trust-strip">
-  <span class="trust-item"><b>24hr</b> order confirmation</span>
-  <span class="trust-item"><b>Direct</b> delivery — no third party</span>
-  <span class="trust-item"><b>PKR + USD</b> payment accepted</span>
+  <span class="trust-item"><b>Instant / Direct</b> delivery</span>
+  <span class="trust-item"><b>100% Verified</b> payment verification</span>
+  <span class="trust-item"><b>PKR + USD</b> accepted</span>
 </div>
 
-<!-- ================= STORE ================= -->
 <section class="section" id="store">
   <div class="section-head">
-    <span class="section-eyebrow">// Store</span>
+    <span class="section-eyebrow">// Marketplace</span>
     <h2 class="section-title">Products &amp; Services</h2>
-    <p class="section-sub">Everything below is delivered directly by me — no automated middlemen.</p>
+    <p class="section-sub">Explore active apps, software tools, custom services, and tech deals.</p>
   </div>
 
   <div class="store-tabs">
     <button class="tab-btn active" data-filter="all">All Items</button>
-    <button class="tab-btn" data-filter="digital_app">Apps &amp; Licenses</button>
+    <button class="tab-btn" data-filter="digital_app">Apps &amp; Software</button>
     <button class="tab-btn" data-filter="cv_builder">CV Service</button>
-    <button class="tab-btn" data-filter="manual_service">Custom Development</button>
+    <button class="tab-btn" data-filter="manual_service">Custom Services</button>
+    <button class="tab-btn" data-filter="daraz_affiliate">Daraz Deals</button>
   </div>
 
   <div class="store-grid" id="storeGrid"><p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">Loading products...</p></div>
 </section>
 
-<!-- ================= NOTES ANCHOR (uses same grid/filter) ================= -->
-<div id="notes"></div>
-
-<!-- ================= REVIEWS ================= -->
 <section class="section" id="reviews">
   <div class="section-head">
     <span class="section-eyebrow">// Reviews</span>
     <h2 class="section-title">What clients say</h2>
-    <p class="section-sub">Real feedback from past orders. Leave your own below.</p>
   </div>
 
   <div class="reviews-summary">
@@ -544,11 +501,7 @@
   <div class="review-form-box">
     <h3>Leave a Review</h3>
     <div class="star-select" id="starSelect">
-      <button data-val="1">★</button>
-      <button data-val="2">★</button>
-      <button data-val="3">★</button>
-      <button data-val="4">★</button>
-      <button data-val="5">★</button>
+      <button data-val="1">★</button><button data-val="2">★</button><button data-val="3">★</button><button data-val="4">★</button><button data-val="5">★</button>
     </div>
     <input type="text" class="form-input" id="reviewName" placeholder="Your name">
     <input type="text" class="form-input" id="reviewProduct" placeholder="Product/service you ordered">
@@ -557,18 +510,15 @@
   </div>
 </section>
 
-<!-- ================= FOOTER ================= -->
 <footer class="site-footer">
   <div class="footer-links">
     <a href="https://fahad912-f.github.io" target="_blank">Portfolio →</a>
-    <a href="https://www.linkedin.com/in/fahad-faheem-320745419" target="_blank">LinkedIn →</a>
     <a href="https://wa.me/923495325927" target="_blank">WhatsApp →</a>
     <a href="mailto:ff9224386@gmail.com">ff9224386@gmail.com</a>
   </div>
-  <div class="footer-note">© 2026 FahadByte. Orders confirmed manually within 24 hours.</div>
+  <div class="footer-note">© 2026 FahadByte Digital Platform.</div>
 </footer>
 
-<!-- ================= CHECKOUT DRAWER ================= -->
 <div class="overlay" id="checkoutOverlay">
   <div class="drawer">
     <button class="close-btn" id="closeDrawer">✕</button>
@@ -577,210 +527,121 @@
     <div class="drawer-price" id="drawerPrice">PKR 0 · $0</div>
 
     <div class="account-box">
-      <div class="account-row"><span>JazzCash / EasyPaisa / NayaPay</span><span>0349-5325927</span></div>
+      <div class="account-row"><span>JazzCash / EasyPaisa</span><span>0349-5325927</span></div>
       <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
-      <div class="account-row"><span>Payoneer / Binance Pay ID</span><span>Fahadfaheem814@gmail.com</span></div>
     </div>
 
-    <label class="field-label">Your Email</label>
+    <label class="field-label">Your Email Address</label>
     <input type="email" class="form-input" id="orderEmail" placeholder="you@example.com">
+
+    <label class="field-label">Custom Notes / Project Requirements (Optional)</label>
+    <textarea class="form-textarea" id="orderRequirements" placeholder="Enter CV details, special requests, or instructions..."></textarea>
 
     <label class="field-label">Payment Method</label>
     <select class="form-input" id="orderPaymentMethod">
       <option value="JazzCash">JazzCash</option>
       <option value="EasyPaisa">EasyPaisa</option>
       <option value="NayaPay">NayaPay</option>
-      <option value="Binance">Binance</option>
-      <option value="Payoneer">Payoneer (International)</option>
+      <option value="Bank Transfer">Bank Transfer</option>
     </select>
 
     <label class="field-label">Upload Payment Screenshot</label>
     <div class="upload-box" id="uploadBox">
-      <span id="uploadText">📎 Tap to upload screenshot</span>
+      <span id="uploadText">📎 Tap to upload payment screenshot</span>
     </div>
     <input type="file" id="screenshotInput" accept="image/*">
 
     <button class="confirm-btn" id="confirmOrderBtn">Confirm Order</button>
     <p id="orderError" style="color:#e0453f;font-size:12px;margin-top:10px;display:none;"></p>
-
-    <a class="wa-btn" href="https://wa.me/923495325927" target="_blank" style="margin-top:12px;">💬 Or confirm directly via WhatsApp</a>
   </div>
 </div>
 
-<div class="toast" id="toast">Order submitted — you'll hear back within 24 hours.</div>
+<div class="overlay" id="trackOverlay">
+  <div class="drawer">
+    <button class="close-btn" id="closeTrack">✕</button>
+    <div class="drawer-handle"></div>
+    <div class="drawer-title">Track Your Order</div>
+    <p style="font-size:12.5px;color:var(--chalk-dim);margin-bottom:18px;">Enter your email address to check live order status & download links.</p>
+
+    <input type="email" class="form-input" id="trackEmail" placeholder="Enter your email address">
+    <button class="confirm-btn" id="searchOrderBtn">Track Order</button>
+
+    <div id="trackResults" style="margin-top:20px;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="authOverlay">
+  <div class="drawer">
+    <button class="close-btn" id="closeAuth">✕</button>
+    <div class="drawer-handle"></div>
+    <div class="drawer-title" id="authTitle">Log In</div>
+    <input type="email" class="form-input" id="authEmail" placeholder="Email" style="margin-top:14px;">
+    <input type="password" class="form-input" id="authPassword" placeholder="Password">
+    <button class="confirm-btn" id="authSubmitBtn">Log In</button>
+    <p id="authError" style="color:#e0453f;font-size:12px;margin-top:10px;display:none;"></p>
+  </div>
+</div>
+
+<div class="toast" id="toast">Order submitted — check Track Order modal for status.</div>
 
 <script>
-/* ======================================================================
-   ⚙️ ADMIN PANEL — edit everything about your store right here.
-   This is a static site (no backend/database), so this code block
-   IS your control panel. Edit values below, save, then push to GitHub —
-   changes go live automatically once committed.
-====================================================================== */
-
-const CONTACT = {
-  whatsapp: "923495325927",
-  email: "ff9224386@gmail.com",
-  jazzcash: "0349-5325927",
-  nayapay: "0349-5325927",
-  accountTitle: "Fahad Faheem",
-  linkedin: "https://www.linkedin.com/in/fahad-faheem-320745419",
-  portfolio: "https://fahad912-f.github.io"
-};
-
-const WEB3FORMS_KEY = "24021880-27fa-43cd-94cc-2b89c191103e";
-
-// ---- Supabase (backend: accounts + orders) ----
+// SUPABASE BACKEND CONNECTION
 const SUPABASE_URL = "https://jtjdrcggbhrbizlukcdz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Xa7kRv1HDV_xN5T1jElFxA_PwbXM-qd";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let authMode = 'login'; // 'login' or 'signup'
 let currentUser = null;
-
-const authOverlay = document.getElementById('authOverlay');
-const authNavBtn = document.getElementById('authNavBtn');
-const authTitle = document.getElementById('authTitle');
-const authEmail = document.getElementById('authEmail');
-const authPhone = document.getElementById('authPhone');
-const authPassword = document.getElementById('authPassword');
-const authSubmitBtn = document.getElementById('authSubmitBtn');
-const authError = document.getElementById('authError');
-const authToggleText = document.getElementById('authToggleText');
-const authToggleLink = document.getElementById('authToggleLink');
-
-function openAuthModal(){ authOverlay.classList.add('open'); authError.style.display = 'none'; }
-document.getElementById('closeAuth').addEventListener('click', () => authOverlay.classList.remove('open'));
-authOverlay.addEventListener('click', e => { if(e.target === authOverlay) authOverlay.classList.remove('open'); });
-
-authToggleLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  authMode = authMode === 'login' ? 'signup' : 'login';
-  if(authMode === 'signup'){
-    authTitle.textContent = 'Sign Up';
-    authSubmitBtn.textContent = 'Sign Up';
-    authPhone.style.display = 'block';
-    authToggleText.textContent = 'Already have an account?';
-    authToggleLink.textContent = 'Log In';
-  } else {
-    authTitle.textContent = 'Log In';
-    authSubmitBtn.textContent = 'Log In';
-    authPhone.style.display = 'none';
-    authToggleText.textContent = "Don't have an account?";
-    authToggleLink.textContent = 'Sign Up';
-  }
-});
-
-authNavBtn.addEventListener('click', async () => {
-  if(currentUser){
-    await sb.auth.signOut();
-  } else {
-    openAuthModal();
-  }
-});
-
-authSubmitBtn.addEventListener('click', async () => {
-  const email = authEmail.value.trim();
-  const password = authPassword.value.trim();
-  const phone = authPhone.value.trim();
-  authError.style.display = 'none';
-  if(!email || !password){ authError.textContent = 'Please enter email and password.'; authError.style.display = 'block'; return; }
-
-  authSubmitBtn.disabled = true;
-  authSubmitBtn.textContent = 'Please wait...';
-
-  try {
-    if(authMode === 'signup'){
-      const { error } = await sb.auth.signUp({ email, password, options: { data: { phone } } });
-      if(error) throw error;
-      alert('Account created! You can now log in and place orders.');
-    } else {
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      if(error) throw error;
-    }
-    authOverlay.classList.remove('open');
-    authEmail.value = ''; authPassword.value = ''; authPhone.value = '';
-  } catch(err){
-    authError.textContent = err.message || 'Something went wrong.';
-    authError.style.display = 'block';
-  }
-  authSubmitBtn.disabled = false;
-  authSubmitBtn.textContent = authMode === 'signup' ? 'Sign Up' : 'Log In';
-});
-
-sb.auth.onAuthStateChange((event, session) => {
-  currentUser = session ? session.user : null;
-  authNavBtn.textContent = currentUser ? `👤 ${currentUser.email.split('@')[0]} (Logout)` : 'Login';
-});
-
-// Restore session on load
-sb.auth.getSession().then(({ data: { session } }) => {
-  currentUser = session ? session.user : null;
-  authNavBtn.textContent = currentUser ? `👤 ${currentUser.email.split('@')[0]} (Logout)` : 'Login';
-});
-
-// ============================================================
-// DYNAMIC PRODUCTS — fetched live from Supabase `products` table
-// ============================================================
-const grid = document.getElementById('storeGrid');
 let ALL_PRODUCTS = [];
 let currentFilter = 'all';
+let currentProduct = null;
 
-function starString(n){
-  n = Math.round(n || 5);
-  return '★'.repeat(n) + '<span>' + '★'.repeat(5-n) + '</span>';
-}
+// Bismillah overlay enter
+document.getElementById('enterStoreBtn').addEventListener('click', () => {
+  document.getElementById('bismillahOverlay').classList.add('hide');
+});
 
-function categoryLabel(cat){
-  return cat === 'digital_app' ? 'Digital Product' : cat === 'cv_builder' ? 'CV Service' : 'Custom Development';
-}
-
+// Load products live
 async function loadProducts(){
+  const grid = document.getElementById('storeGrid');
   const { data, error } = await sb
     .from('products')
     .select('*')
     .eq('is_active', true)
+    .eq('status', 'approved')
     .order('created_at', { ascending: false });
 
   if(error){
-    grid.innerHTML = `<p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">Could not load products. Please refresh.</p>`;
-    console.error(error);
+    grid.innerHTML = `<p style="color:var(--chalk-dim);font-size:12px;">Error loading store items.</p>`;
     return;
   }
-  ALL_PRODUCTS = data;
+  ALL_PRODUCTS = data || [];
   renderProducts(currentFilter);
 }
 
 function renderProducts(filter){
   currentFilter = filter;
+  const grid = document.getElementById('storeGrid');
   grid.innerHTML = '';
   const list = filter === 'all' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p => p.category === filter);
 
   if(list.length === 0){
-    grid.innerHTML = `<p style="color:var(--chalk-dim);font-family:var(--mono);font-size:12px;">No items in this category yet.</p>`;
+    grid.innerHTML = `<p style="color:var(--chalk-dim);font-size:12px;">No active items in this category.</p>`;
     return;
   }
 
   list.forEach(p => {
-    const hasDiscount = p.discount_percent > 0;
-    const discountedPkr = hasDiscount ? Math.round(p.price_pkr * (1 - p.discount_percent / 100)) : p.price_pkr;
-    const discountedUsd = hasDiscount ? (p.price_usd * (1 - p.discount_percent / 100)).toFixed(2) : p.price_usd;
-
+    const isDaraz = p.category === 'daraz_affiliate';
     const card = document.createElement('div');
     card.className = 'product-card';
     card.innerHTML = `
-      <span class="product-type">${categoryLabel(p.category)}</span>
+      <span class="product-type">${p.category.replace('_', ' ')}</span>
       <div class="product-title">${p.title}</div>
       <div class="product-desc">${p.description || ''}</div>
-      ${p.sold_count > 0 ? `<span class="tag" style="width:fit-content;">🔥 ${p.sold_count} sold</span>` : ''}
       <div class="price-row">
-        <div>
-          <span class="price-pkr">PKR ${Number(discountedPkr).toLocaleString()}</span>
-          ${hasDiscount ? `<span class="price-usd" style="text-decoration:line-through;margin-left:6px;">PKR ${Number(p.price_pkr).toLocaleString()}</span>` : ''}
-        </div>
-        <span class="price-usd">≈ $${discountedUsd} USD</span>
+        <span class="price-pkr">PKR ${Number(p.price_pkr).toLocaleString()}</span>
+        <span class="price-usd">≈ $${p.price_usd} USD</span>
       </div>
-      ${hasDiscount ? `<span class="tag" style="background:#3a1414;border-color:#e0453f;color:#ff8a8a;width:fit-content;">-${p.discount_percent}% OFF</span>` : ''}
-      <button class="buy-btn" data-id="${p.id}">Order Now</button>
+      <button class="buy-btn" data-id="${p.id}">${isDaraz ? 'Buy on Daraz ↗' : 'Order Now'}</button>
     `;
     grid.appendChild(card);
   });
@@ -794,207 +655,155 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-loadProducts();
-
-// ============================================================
-// DYNAMIC REVIEWS — fetched live from Supabase `reviews` table
-// ============================================================
-const reviewGrid = document.getElementById('reviewGrid');
-let ALL_REVIEWS = [];
-
-async function loadReviews(){
-  const { data, error } = await sb
-    .from('reviews')
-    .select('*, products(title)')
-    .eq('approved', true)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if(error){ console.error(error); return; }
-  ALL_REVIEWS = data;
-  renderReviews();
-}
-
-function renderReviews(){
-  reviewGrid.innerHTML = '';
-  if(ALL_REVIEWS.length === 0){
-    reviewGrid.innerHTML = `<p style="color:var(--chalk-dim);font-size:13px;">No reviews yet — be the first!</p>`;
-  }
-  ALL_REVIEWS.forEach(r => {
-    const card = document.createElement('div');
-    card.className = 'review-card';
-    card.innerHTML = `
-      <div class="review-top">
-        <span class="review-name">${r.reviewer_name}</span>
-        <span class="review-stars">${starString(r.rating)}</span>
-      </div>
-      <div class="review-text">${r.comment}</div>
-      ${r.products ? `<span class="review-product">Ordered: ${r.products.title}</span>` : ''}
-    `;
-    reviewGrid.appendChild(card);
-  });
-  const avg = ALL_REVIEWS.length ? (ALL_REVIEWS.reduce((s,r) => s + r.rating, 0) / ALL_REVIEWS.length) : 5;
-  document.getElementById('avgScore').textContent = avg.toFixed(1);
-  document.getElementById('avgStars').innerHTML = starString(avg);
-  document.getElementById('avgCount').textContent = `based on ${ALL_REVIEWS.length} reviews`;
-}
-loadReviews();
-
-// ---------- Review submission form ----------
-let selectedStars = 5;
-document.querySelectorAll('#starSelect button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    selectedStars = parseInt(btn.dataset.val);
-    document.querySelectorAll('#starSelect button').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.val) <= selectedStars);
-    });
-  });
-});
-document.querySelectorAll('#starSelect button').forEach(b => {
-  if(parseInt(b.dataset.val) <= 5) b.classList.add('active');
-});
-
-document.getElementById('submitReview').addEventListener('click', async () => {
-  const name = document.getElementById('reviewName').value.trim();
-  const productTitle = document.getElementById('reviewProduct').value.trim();
-  const text = document.getElementById('reviewText').value.trim();
-  if(!name || !text){ alert('Please add your name and review.'); return; }
-
-  const matchedProduct = ALL_PRODUCTS.find(p => p.title.toLowerCase() === productTitle.toLowerCase());
-
-  const { error } = await sb.from('reviews').insert({
-    product_id: matchedProduct ? matchedProduct.id : null,
-    reviewer_name: name,
-    rating: selectedStars,
-    comment: text
-  });
-
-  if(error){ alert('Something went wrong — please try again.'); console.error(error); return; }
-
-  alert('Thanks! Your review has been posted.');
-  document.getElementById('reviewName').value = '';
-  document.getElementById('reviewProduct').value = '';
-  document.getElementById('reviewText').value = '';
-  loadReviews();
-});
-
-// ============================================================
-// CHECKOUT — email + payment method + screenshot → Supabase Storage + orders table
-// ============================================================
+// Store Click / Checkout Drawer
 const overlay = document.getElementById('checkoutOverlay');
-const drawerTitle = document.getElementById('drawerTitle');
-const drawerPrice = document.getElementById('drawerPrice');
-let currentProduct = null;
-
-grid.addEventListener('click', e => {
+document.getElementById('storeGrid').addEventListener('click', e => {
   if(!e.target.classList.contains('buy-btn')) return;
   const id = e.target.dataset.id;
   currentProduct = ALL_PRODUCTS.find(p => p.id === id);
-  drawerTitle.textContent = currentProduct.title;
-  drawerPrice.textContent = `PKR ${Number(currentProduct.price_pkr).toLocaleString()} · $${currentProduct.price_usd} USD`;
+
+  if(currentProduct.category === 'daraz_affiliate' && currentProduct.download_link){
+    window.open(currentProduct.download_link, '_blank');
+    return;
+  }
+
+  document.getElementById('drawerTitle').textContent = currentProduct.title;
+  document.getElementById('drawerPrice').textContent = `PKR ${Number(currentProduct.price_pkr).toLocaleString()} · $${currentProduct.price_usd} USD`;
   document.getElementById('orderEmail').value = currentUser ? currentUser.email : '';
-  resetDrawerState();
   overlay.classList.add('open');
 });
 
 document.getElementById('closeDrawer').addEventListener('click', () => overlay.classList.remove('open'));
-overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
 
+// Screenshot upload handling
 const uploadBox = document.getElementById('uploadBox');
 const screenshotInput = document.getElementById('screenshotInput');
-const uploadText = document.getElementById('uploadText');
-const confirmOrderBtn = document.getElementById('confirmOrderBtn');
-const orderError = document.getElementById('orderError');
-
 uploadBox.addEventListener('click', () => screenshotInput.click());
 screenshotInput.addEventListener('change', () => {
   if(screenshotInput.files.length > 0){
-    uploadText.textContent = '✅ ' + screenshotInput.files[0].name;
+    document.getElementById('uploadText').textContent = '✅ ' + screenshotInput.files[0].name;
     uploadBox.classList.add('has-file');
   }
 });
 
-function resetDrawerState(){
-  uploadText.textContent = '📎 Tap to upload screenshot';
-  uploadBox.classList.remove('has-file');
-  screenshotInput.value = '';
-  orderError.style.display = 'none';
-  document.getElementById('orderPaymentMethod').selectedIndex = 0;
-}
-
-confirmOrderBtn.addEventListener('click', async () => {
+// Order Confirmation
+document.getElementById('confirmOrderBtn').addEventListener('click', async () => {
   const email = document.getElementById('orderEmail').value.trim();
-  const paymentMethod = document.getElementById('orderPaymentMethod').value;
-  orderError.style.display = 'none';
+  const reqs = document.getElementById('orderRequirements').value.trim();
+  const payMethod = document.getElementById('orderPaymentMethod').value;
+  const errBox = document.getElementById('orderError');
+  errBox.style.display = 'none';
 
   if(!email || !email.includes('@')){
-    orderError.textContent = 'Please enter a valid email address.';
-    orderError.style.display = 'block';
+    errBox.textContent = 'Please enter a valid email address.';
+    errBox.style.display = 'block';
     return;
   }
 
-  confirmOrderBtn.disabled = true;
-  confirmOrderBtn.textContent = 'Sending...';
+  const btn = document.getElementById('confirmOrderBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
 
   try {
     let proofUrl = null;
-
-    // Upload screenshot to Supabase Storage (private bucket, only admin can view)
     if(screenshotInput.files[0]){
       const file = screenshotInput.files[0];
       const filePath = `order_${Date.now()}_${file.name}`;
-      const { error: uploadErr } = await sb.storage.from('payment-proofs').upload(filePath, file);
-      if(!uploadErr){
+      const { error: upErr } = await sb.storage.from('payment-proofs').upload(filePath, file);
+      if(!upErr){
         const { data: urlData } = sb.storage.from('payment-proofs').getPublicUrl(filePath);
         proofUrl = urlData.publicUrl;
       }
     }
 
-    const { error: insertErr } = await sb.from('orders').insert({
+    const { error: insErr } = await sb.from('orders').insert({
       product_id: currentProduct.id,
+      seller_id: currentProduct.seller_id || null,
       product_title: currentProduct.title,
       price: currentProduct.price_pkr,
       currency: 'PKR',
       customer_email: email,
-      payment_method: paymentMethod,
+      customer_requirements: reqs,
+      payment_method: payMethod,
       payment_proof_url: proofUrl,
       order_type: currentProduct.category,
       status: 'pending'
     });
 
-    if(insertErr) throw insertErr;
+    if(insErr) throw insErr;
 
     overlay.classList.remove('open');
-    showToast();
-
-    // Also open WhatsApp as a backup confirmation channel
-    const msg = encodeURIComponent(`Order confirmed on FahadByte: ${currentProduct.title} (PKR ${currentProduct.price_pkr}). My email: ${email}`);
-    window.open(`https://wa.me/923495325927?text=${msg}`, '_blank');
+    document.getElementById('toast').classList.add('show');
+    setTimeout(() => document.getElementById('toast').classList.remove('show'), 4000);
 
   } catch(err){
-    orderError.textContent = 'Something went wrong. Please try again or WhatsApp us directly.';
-    orderError.style.display = 'block';
-    console.error(err);
+    errBox.textContent = 'Error placing order. Please try again.';
+    errBox.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Confirm Order';
+});
+
+// LIVE ORDER TRACKING
+const trackOverlay = document.getElementById('trackOverlay');
+document.getElementById('openTrackBtn').addEventListener('click', () => trackOverlay.classList.add('open'));
+document.getElementById('closeTrack').addEventListener('click', () => trackOverlay.classList.remove('open'));
+
+document.getElementById('searchOrderBtn').addEventListener('click', async () => {
+  const email = document.getElementById('trackEmail').value.trim();
+  const resContainer = document.getElementById('trackResults');
+  resContainer.innerHTML = '<p style="color:var(--chalk-dim);font-size:12px;">Searching orders...</p>';
+
+  const { data, error } = await sb
+    .from('orders')
+    .select('*')
+    .eq('customer_email', email)
+    .order('created_at', { ascending: false });
+
+  if(error || !data || data.length === 0){
+    resContainer.innerHTML = '<p style="color:#ff8a8a;font-size:12px;">No orders found for this email address.</p>';
+    return;
   }
 
-  confirmOrderBtn.textContent = 'Confirm Order';
-  confirmOrderBtn.disabled = false;
+  resContainer.innerHTML = '';
+  data.forEach(ord => {
+    const statusBadge = ord.status === 'approved' 
+      ? '<span class="badge-approved">🟢 Delivered / Ready</span>' 
+      : '<span class="badge-pending">🔴 Payment Under Review</span>';
+
+    const itemCard = document.createElement('div');
+    itemCard.style.cssText = 'background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:10px;';
+    itemCard.innerHTML = `
+      <div style="display:flex; justify-style:space-between; justify-content:space-between; align-items:center;">
+        <span style="font-weight:600; font-size:13px;">${ord.product_title}</span>
+        ${statusBadge}
+      </div>
+      <div style="font-size:11px; color:var(--chalk-dim); margin-top:6px;">Order Date: ${new Date(ord.created_at).toLocaleDateString()}</div>
+      ${ord.delivered_file_url ? `<a href="${ord.delivered_file_url}" target="_blank" style="display:inline-block; margin-top:8px; color:var(--gold-bright); font-size:12px; font-weight:600;">Download Attachment ↗</a>` : ''}
+    `;
+    resContainer.appendChild(itemCard);
+  });
 });
 
-function showToast(){
-  const toast = document.getElementById('toast');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3500);
+// Reviews handling
+async function loadReviews(){
+  const { data } = await sb.from('reviews').select('*').order('created_at', { ascending: false }).limit(10);
+  const grid = document.getElementById('reviewGrid');
+  grid.innerHTML = '';
+  (data || []).forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'review-card';
+    div.innerHTML = `
+      <div class="review-top"><span class="review-name">${r.reviewer_name}</span><span class="review-stars">★ ${r.rating}/5</span></div>
+      <div class="review-text">${r.comment}</div>
+    `;
+    grid.appendChild(div);
+  });
 }
 
-// ============================================================
-// BISMILLAH WELCOME MODAL
-// ============================================================
-document.getElementById('enterStoreBtn').addEventListener('click', () => {
-  document.getElementById('bismillahOverlay').classList.add('hide');
-});
-
+// Initial Load
+loadProducts();
+loadReviews();
 </script>
-
 </body>
 </html>
