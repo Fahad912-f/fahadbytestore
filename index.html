@@ -1012,6 +1012,13 @@ confirmOrderBtn.addEventListener('click', async () => {
     overlay.classList.remove('open');
     showToast();
 
+    // Send "order received" confirmation email (via secure Edge Function)
+    fetch(`${SUPABASE_URL}/functions/v1/send-order-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ email, title: currentProduct.title, type: 'order_received' })
+    }).catch(() => {});
+
     // Also open WhatsApp as a backup confirmation channel
     const msg = encodeURIComponent(`Order confirmed on FahadByte: ${currentProduct.title} (PKR ${currentProduct.price_pkr}). My email: ${email}`);
     window.open(`https://wa.me/923495325927?text=${msg}`, '_blank');
