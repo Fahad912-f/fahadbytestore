@@ -1197,6 +1197,11 @@ async function loadSellerDashboard(){
       </select>
       <input type="number" class="form-input" id="spPricePkr" placeholder="Price (PKR)">
       <input type="number" class="form-input" id="spPriceUsd" placeholder="Price (USD)">
+      <label class="field-label">Product Photo</label>
+      <div class="upload-box" id="spImageUploadBox">
+        <span id="spImageUploadText">📷 Tap to upload product photo</span>
+      </div>
+      <input type="file" id="spImageInput" accept="image/*">
       <button class="confirm-btn" id="spSubmitBtn">Submit for Approval</button>
       <p style="font-size:11px;color:var(--chalk-dim);margin-top:8px;">New products need admin approval before going live.</p>
     </div>
@@ -1244,6 +1249,19 @@ async function loadSellerDashboard(){
     });
   }
 
+  // ---- Product image upload preview ----
+  const spImageUploadBox = document.getElementById('spImageUploadBox');
+  const spImageInput = document.getElementById('spImageInput');
+  const spImageUploadText = document.getElementById('spImageUploadText');
+
+  spImageUploadBox.addEventListener('click', () => spImageInput.click());
+  spImageInput.addEventListener('change', () => {
+    if(spImageInput.files.length){
+      spImageUploadText.textContent = '✅ ' + spImageInput.files[0].name;
+      spImageUploadBox.classList.add('has-file');
+    }
+  });
+
   document.getElementById('spSubmitBtn').addEventListener('click', async () => {
     const title = document.getElementById('spTitle').value.trim();
     const description = document.getElementById('spDesc').value.trim();
@@ -1253,15 +1271,35 @@ async function loadSellerDashboard(){
 
     if(!title){ alert('Please enter a product title.'); return; }
 
+    const submitBtn = document.getElementById('spSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    // Upload product photo if provided
+    let image_url = null;
+    if(spImageInput.files[0]){
+      const file = spImageInput.files[0];
+      const filePath = `product_${Date.now()}_${file.name}`;
+      const { error: uploadErr } = await sb.storage.from('store-assets').upload(filePath, file);
+      if(!uploadErr){
+        const { data: urlData } = sb.storage.from('store-assets').getPublicUrl(filePath);
+        image_url = urlData.publicUrl;
+      }
+    }
+
     const { error } = await sb.from('products').insert({
       store_id: myStore.id,
       is_official_service: false,
       title, description, product_type,
       price_pkr, price_usd,
+      image_url,
       category: 'manual_service',
       approval_status: 'pending',
       is_active: true
     });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit for Approval';
 
     if(error){ alert('Something went wrong.'); console.error(error); return; }
     alert('Product submitted for approval!');
