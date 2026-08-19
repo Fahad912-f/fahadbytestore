@@ -103,6 +103,9 @@
       <button class="btn" onclick="saveProduct()">+ Publish Service to Website</button>
     </div>
 
+    <h3 style="font-family:var(--display); margin-bottom:14px; color:var(--gold);">Pending Seller Products</h3>
+    <div id="pendingProductsList"></div>
+
     <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Active Services</h3>
     <div id="productsList"></div>
   </div>
@@ -299,7 +302,7 @@ async function approveOrder(id, email, title, productId){
         "Content-Type": "application/json",
         "Authorization": `Bearer ${session.access_token}`
       },
-      body: JSON.stringify({ email, title })
+      body: JSON.stringify({ email, title, type: 'order_approved' })
     });
     const result = await res.json();
     if(result.success) alert('Order approved, email sent & sold count updated!');
@@ -316,8 +319,23 @@ async function loadProducts(){
   const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
   productsMap = {};
   (data || []).forEach(p => { productsMap[p.id] = p; });
+
+  const pendingSellerProducts = (data || []).filter(p => p.approval_status === 'pending' && p.store_id);
+  const pendingList = document.getElementById('pendingProductsList');
+  pendingList.innerHTML = pendingSellerProducts.length ? pendingSellerProducts.map(p => `
+    <div class="card">
+      <h4>${p.title}</h4>
+      <div style="font-size:12px; color:var(--chalk-dim); margin:6px 0;">${p.description || ''}</div>
+      <div style="font-size:12px; color:var(--gold-bright);">PKR ${p.price_pkr} / $${p.price_usd} · ${p.product_type}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="action-btn approve-btn" style="flex:1;" onclick="moderateProduct('${p.id}', 'approved')">✓ Approve</button>
+        <button class="action-btn delete-btn" style="flex:1;" onclick="moderateProduct('${p.id}', 'rejected')">✕ Reject</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No pending seller products.</p>';
+
   const list = document.getElementById('productsList');
-  list.innerHTML = (data || []).map(p => `
+  list.innerHTML = (data || []).filter(p => p.approval_status !== 'pending').map(p => `
     <div class="card">
       <div class="card-top">
         <h4>${p.title} <span style="font-size:11px; color:var(--gold);">[${p.category}]</span></h4>
@@ -333,6 +351,19 @@ async function loadProducts(){
       <button class="action-btn" style="margin-top:8px; background:var(--panel-2); color:var(--chalk); border:1px solid var(--line);" onclick="toggleActive('${p.id}', ${p.is_active})">${p.is_active ? 'Hide from site' : 'Show on site'}</button>
     </div>
   `).join('');
+}
+
+async function moderateProduct(id, approval_status){
+  const { data: product } = await sb.from('products').select('*, stores(store_name, seller_id)').eq('id', id).single();
+  await sb.from('products').update({ approval_status }).eq('id', id);
+
+  if(product && product.stores){
+    const { data: sellerProfile } = await sb.from('profiles').select('email').eq('id', product.stores.seller_id).single();
+    if(sellerProfile){
+      sendNotifEmail(sellerProfile.email, product.title, approval_status === 'approved' ? 'product_approved' : 'product_rejected');
+    }
+  }
+  loadProducts();
 }
 
 async function saveProduct(){
@@ -480,9 +511,28 @@ async function loadStores(){
   `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">None.</p>';
 }
 
+async function sendNotifEmail(email, title, type){
+  if(!email) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch(`${SUPABASE_URL}/functions/v1/send-order-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+      body: JSON.stringify({ email, title, type })
+    });
+  } catch(e){ console.error('Email failed', e); }
+}
+
 async function setStoreStatus(id, status){
+  const { data: store } = await sb.from('stores').select('*, profiles(email)').eq('id', id).single();
   const { error } = await sb.from('stores').update({ status }).eq('id', id);
   if(error){ alert('Failed: ' + error.message); return; }
+
+  if(store && store.profiles){
+    if(status === 'approved') sendNotifEmail(store.profiles.email, store.store_name, 'store_approved');
+    if(status === 'rejected') sendNotifEmail(store.profiles.email, store.store_name, 'store_rejected');
+  }
+
   loadStores();
   refreshBadges();
 }
