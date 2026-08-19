@@ -478,7 +478,7 @@
 
       <div class="account-box">
         <div class="account-row"><span>Registration Fee</span><span>PKR 500</span></div>
-        <div class="account-row"><span>JazzCash / EasyPaisa / NayaPay</span><span>0349-5325927</span></div>
+        <div class="account-row"><span>JazzCash / NayaPay</span><span>0349-5325927</span></div>
         <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
       </div>
 
@@ -614,9 +614,9 @@
     <div class="drawer-price" id="drawerPrice">PKR 0 · $0</div>
 
     <div class="account-box">
-      <div class="account-row"><span>JazzCash / EasyPaisa / NayaPay</span><span>0349-5325927</span></div>
+      <div class="account-row"><span>JazzCash / NayaPay</span><span>0349-5325927</span></div>
       <div class="account-row"><span>Account Title</span><span>Fahad Faheem</span></div>
-      <div class="account-row"><span>Payoneer / Binance Pay ID</span><span>Fahadfaheem814@gmail.com</span></div>
+      <div class="account-row"><span>Payoneer Email</span><span>Fahadfaheem814@gmail.com</span></div>
     </div>
 
     <label class="field-label">Your Email</label>
@@ -625,9 +625,7 @@
     <label class="field-label">Payment Method</label>
     <select class="form-input" id="orderPaymentMethod">
       <option value="JazzCash">JazzCash</option>
-      <option value="EasyPaisa">EasyPaisa</option>
       <option value="NayaPay">NayaPay</option>
-      <option value="Binance">Binance</option>
       <option value="Payoneer">Payoneer (International)</option>
     </select>
 
@@ -989,6 +987,13 @@ confirmOrderBtn.addEventListener('click', async () => {
       }
     }
 
+    // Find the seller for this product (if it belongs to a vendor store)
+    let sellerId = null;
+    if(currentProduct.store_id){
+      const { data: storeData } = await sb.from('stores').select('seller_id').eq('id', currentProduct.store_id).maybeSingle();
+      if(storeData) sellerId = storeData.seller_id;
+    }
+
     const { error: insertErr } = await sb.from('orders').insert({
       product_id: currentProduct.id,
       product_title: currentProduct.title,
@@ -998,6 +1003,7 @@ confirmOrderBtn.addEventListener('click', async () => {
       payment_method: paymentMethod,
       payment_proof_url: proofUrl,
       order_type: currentProduct.category,
+      seller_id: sellerId,
       status: 'pending'
     });
 
@@ -1161,7 +1167,18 @@ async function loadSellerDashboard(){
   const { data: myProducts } = await sb.from('products').select('*').eq('store_id', myStore.id).order('created_at', { ascending: false });
   const { data: myOrders } = await sb.from('orders').select('*').eq('seller_id', currentUser.id).order('created_at', { ascending: false });
 
+  const unpaidBalance = (myOrders || [])
+    .filter(o => o.status === 'approved' && o.payout_status === 'unpaid')
+    .reduce((sum, o) => sum + (Number(o.seller_payout) || 0), 0);
+
   sellerDashboardContent.innerHTML = `
+    <div class="account-box" style="margin-bottom:20px;">
+      <div class="account-row"><span>Unpaid Balance</span><span style="color:var(--gold-bright);font-weight:700;">PKR ${unpaidBalance.toLocaleString()}</span></div>
+    </div>
+    ${unpaidBalance > 0 ? `
+      <button class="confirm-btn" id="requestWithdrawBtn" style="margin-bottom:20px;">💰 Request Withdrawal</button>
+    ` : ''}
+
     <div style="margin-bottom:20px;">
       <h3 style="font-family:var(--display);font-size:15px;margin-bottom:10px;">Add New Product</h3>
       <input type="text" class="form-input" id="spTitle" placeholder="Product title">
@@ -1192,11 +1209,33 @@ async function loadSellerDashboard(){
       ${(myOrders || []).map(o => `
         <div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:8px;">
           <div style="font-weight:600;font-size:13px;">${o.product_title}</div>
-          <div style="font-size:11px;color:var(--chalk-dim);">Status: ${o.status.toUpperCase()} · Your payout: PKR ${o.seller_payout || 0}</div>
+          <div style="font-size:11px;color:var(--chalk-dim);">Status: ${o.status.toUpperCase()} · Payout: PKR ${o.seller_payout || 0} (${o.payout_status || 'unpaid'})</div>
         </div>
       `).join('') || '<p style="color:var(--chalk-dim);font-size:12px;">No orders yet.</p>'}
     </div>
   `;
+
+  const withdrawBtn = document.getElementById('requestWithdrawBtn');
+  if(withdrawBtn){
+    withdrawBtn.addEventListener('click', async () => {
+      const method = prompt('Payment method (JazzCash/NayaPay/Payoneer):');
+      if(!method) return;
+      const accountDetails = prompt('Your account number / email:');
+      if(!accountDetails) return;
+
+      const { error } = await sb.from('payout_requests').insert({
+        seller_id: currentUser.id,
+        amount: unpaidBalance,
+        method,
+        account_details: accountDetails,
+        status: 'pending'
+      });
+
+      if(error){ alert('Something went wrong.'); console.error(error); return; }
+      alert('Withdrawal request sent! You\'ll be paid within a few days.');
+      loadSellerDashboard();
+    });
+  }
 
   document.getElementById('spSubmitBtn').addEventListener('click', async () => {
     const title = document.getElementById('spTitle').value.trim();
