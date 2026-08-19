@@ -109,7 +109,13 @@
 
   <!-- STORES SECTION -->
   <div id="storesSection" style="display:none;">
-    <h3 style="font-family:var(--display); margin-bottom:14px; color:var(--gold);">Pending Store Approvals</h3>
+    <h3 style="font-family:var(--display); margin-bottom:14px; color:var(--gold);">Withdrawal Requests</h3>
+    <div id="payoutRequestsList"></div>
+
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Seller Earnings Overview</h3>
+    <div id="sellerEarningsList"></div>
+
+    <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--gold);">Pending Store Approvals</h3>
     <div id="pendingStoresList"></div>
     <h3 style="font-family:var(--display); margin:20px 0 10px; color:var(--chalk);">Approved Stores</h3>
     <div id="approvedStoresList"></div>
@@ -265,7 +271,18 @@ function renderOrders(){
 }
 
 async function approveOrder(id, email, title, productId){
-  await sb.from('orders').update({ status: 'approved' }).eq('id', id);
+  const { data: order } = await sb.from('orders').select('price, seller_id').eq('id', id).single();
+  const price = Number(order.price) || 0;
+  const hasSeller = !!order.seller_id;
+  const commission = hasSeller ? Math.round(price * 0.10) : price; // official products = 100% admin
+  const payout = hasSeller ? (price - commission) : 0;
+
+  await sb.from('orders').update({
+    status: 'approved',
+    total_amount: price,
+    admin_commission: commission,
+    seller_payout: payout
+  }).eq('id', id);
 
   // Increment sold_count
   if(productId){
@@ -423,6 +440,9 @@ async function markAllRead(){
 
 // ============ STORES MANAGEMENT ============
 async function loadStores(){
+  await loadPayoutRequests();
+  await loadSellerEarnings();
+
   const { data: pending } = await sb.from('stores').select('*').eq('status', 'pending').order('created_at', { ascending: false });
   const { data: approved } = await sb.from('stores').select('*').eq('status', 'approved').order('created_at', { ascending: false });
   const { data: other } = await sb.from('stores').select('*').in('status', ['rejected', 'suspended']).order('created_at', { ascending: false });
@@ -465,6 +485,69 @@ async function setStoreStatus(id, status){
   if(error){ alert('Failed: ' + error.message); return; }
   loadStores();
   refreshBadges();
+}
+
+// ============ PAYOUTS & SELLER EARNINGS ============
+async function loadPayoutRequests(){
+  const { data } = await sb.from('payout_requests').select('*, profiles(email, full_name)').eq('status', 'pending').order('requested_at', { ascending: false });
+  const list = document.getElementById('payoutRequestsList');
+
+  list.innerHTML = (data && data.length) ? data.map(r => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <h4>PKR ${Number(r.amount).toLocaleString()}</h4>
+          <div style="font-size:12px;color:var(--chalk-dim);">${r.profiles ? (r.profiles.full_name || r.profiles.email) : 'Unknown seller'}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--chalk-dim);margin:6px 0;">💳 ${r.method || 'N/A'} — ${r.account_details || 'N/A'}</div>
+      <button class="action-btn approve-btn" style="width:100%;" onclick="markPayoutPaid('${r.id}', '${r.seller_id}')">✓ Mark as Paid</button>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No pending withdrawal requests.</p>';
+}
+
+async function markPayoutPaid(requestId, sellerId){
+  await sb.from('payout_requests').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', requestId);
+  // Mark that seller's unpaid approved orders as paid
+  await sb.from('orders').update({ payout_status: 'paid' }).eq('seller_id', sellerId).eq('payout_status', 'unpaid').eq('status', 'approved');
+  alert('Marked as paid!');
+  loadStores();
+}
+
+async function loadSellerEarnings(){
+  const { data: orders } = await sb.from('orders').select('seller_id, seller_payout, payout_status, status, created_at').eq('status', 'approved').not('seller_id', 'is', null);
+  const { data: stores } = await sb.from('stores').select('seller_id, store_name');
+
+  const storeMap = {};
+  (stores || []).forEach(s => { storeMap[s.seller_id] = s.store_name; });
+
+  const now = new Date();
+  const earnings = {};
+
+  (orders || []).forEach(o => {
+    if(!earnings[o.seller_id]) earnings[o.seller_id] = { thisMonth: 0, unpaid: 0, allTime: 0 };
+    const amt = Number(o.seller_payout) || 0;
+    earnings[o.seller_id].allTime += amt;
+    if(o.payout_status === 'unpaid') earnings[o.seller_id].unpaid += amt;
+    const d = new Date(o.created_at);
+    if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) earnings[o.seller_id].thisMonth += amt;
+  });
+
+  const list = document.getElementById('sellerEarningsList');
+  const sellerIds = Object.keys(earnings);
+
+  list.innerHTML = sellerIds.length ? sellerIds.map(sid => `
+    <div class="card">
+      <h4>${storeMap[sid] || 'Unknown Store'}</h4>
+      <div style="font-size:12px;color:var(--chalk-dim);margin-top:6px;">
+        This month: PKR ${earnings[sid].thisMonth.toLocaleString()} ·
+        All-time: PKR ${earnings[sid].allTime.toLocaleString()}
+      </div>
+      <div style="font-size:13px;color:var(--gold-bright);font-weight:600;margin-top:4px;">
+        Owed to seller: PKR ${earnings[sid].unpaid.toLocaleString()}
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--chalk-dim);font-size:13px;">No seller sales yet.</p>';
 }
 </script>
 </body>
